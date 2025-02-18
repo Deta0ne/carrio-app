@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useRouter } from 'next/navigation';
 import { resetPasswordSchema, type ResetPasswordInput } from '@/lib/validations/auth';
-import { resetPassword } from '@/app/(auth)/auth/actions';
+import { resetPassword } from '@/app/auth/actions';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle2 } from 'lucide-react';

@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle2 } from 'lucide-react';
 import { forgotPasswordSchema, type ForgotPasswordInput } from '@/lib/validations/auth';
-import { forgotPassword } from '@/app/(auth)/auth/actions';
+import { forgotPassword } from '@/app/auth/actions';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
 export function ForgotPasswordForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ModeToggle } from '../ModeToggle';
 
 export default function AccountForm({ user }: { user: User | null }) {
     const supabase = createClient();
@@ -86,6 +87,9 @@ export default function AccountForm({ user }: { user: User | null }) {
                 <CardTitle>Account Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+                <div>
+                    <ModeToggle />
+                </div>
                 <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
                     <Input id="email" type="email" value={email || ''} onChange={(e) => setEmail(e.target.value)} />

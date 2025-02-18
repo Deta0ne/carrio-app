@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { loginSchema, type LoginInput } from '@/lib/validations/auth';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { login } from '@/app/(auth)/auth/actions';
+import { login } from '@/app/auth/actions';
 
 export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
     const router = useRouter();

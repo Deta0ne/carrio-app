@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import { AppProvider } from '@/providers/app-provider';
 import { ThemeProvider } from '@/providers/theme-provider';
-import { ModeToggle } from '@/components/ModeToggle';
+
 const geistSans = Geist({
     variable: '--font-geist-sans',
     subsets: ['latin'],

@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ModeToggle } from '../ModeToggle';
+import { profileService } from '@/services/profile-service';
+import { useUserStore } from '@/stores/user-store';
 
 export default function AccountForm({ user }: { user: User | null }) {
     const supabase = createClient();
@@ -17,62 +19,30 @@ export default function AccountForm({ user }: { user: User | null }) {
     const [surname, setSurname] = useState<string | null>(null);
     const [jobTitle, setJobTitle] = useState<string | null>(null);
     const [experience, setExperience] = useState<string | null>(null);
-
-    const getProfile = useCallback(async () => {
-        try {
-            setLoading(true);
-
-            const { data, error, status } = await supabase
-                .from('profiles')
-                .select(
-                    `
-                    email,
-                    name,
-                    surname,
-                    job_title,
-                    experience
-                `,
-                )
-                .eq('id', user?.id)
-                .single();
-
-            if (error && status !== 406) {
-                throw error;
-            }
-
-            if (data) {
-                setEmail(data.email);
-                setName(data.name);
-                setSurname(data.surname);
-                setJobTitle(data.job_title);
-                setExperience(data.experience);
-            }
-        } catch (error) {
-            alert('Error loading profile!');
-        } finally {
-            setLoading(false);
-        }
-    }, [user, supabase]);
+    const profile = useUserStore((state) => state.profile);
 
     useEffect(() => {
-        getProfile();
-    }, [user, getProfile]);
+        if (profile) {
+            setEmail(profile.email);
+            setName(profile.name);
+            setSurname(profile.surname);
+            setJobTitle(profile.job_title);
+            setExperience(profile.experience);
+            setLoading(false);
+        }
+    }, [profile]);
 
     async function updateProfile() {
         try {
             setLoading(true);
 
-            const { error } = await supabase.from('profiles').upsert({
-                id: user?.id as string,
-                email,
-                name,
-                surname,
-                job_title: jobTitle,
-                experience,
-                updated_at: new Date().toISOString(),
+            await profileService.updateProfile(user?.id as string, {
+                email: email as string,
+                name: name as string,
+                surname: surname as string,
+                job_title: jobTitle as string,
+                experience: experience as string,
             });
-
-            if (error) throw error;
             alert('Profile updated successfully!');
         } catch (error) {
             alert('Error updating profile!');
@@ -87,9 +57,6 @@ export default function AccountForm({ user }: { user: User | null }) {
                 <CardTitle>Account Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-                <div>
-                    <ModeToggle />
-                </div>
                 <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
                     <Input id="email" type="email" value={email || ''} onChange={(e) => setEmail(e.target.value)} />

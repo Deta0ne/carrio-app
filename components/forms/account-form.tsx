@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ModeToggle } from '../ModeToggle';
 import { profileService } from '@/services/profile-service';
-import { useUserStore } from '@/stores/user-store';
+import { useUserStore } from '@/providers/store-provider';
 
 export default function AccountForm({ user }: { user: User | null }) {
     const supabase = createClient();

@@ -4,7 +4,7 @@ import * as React from 'react';
 import { BookOpen, Bot, Command, Frame, LifeBuoy, Map, PieChart, Send, Settings2, SquareTerminal } from 'lucide-react';
 import { User } from '@supabase/supabase-js';
 import { useEffect } from 'react';
-import { useUserStore } from '@/stores/user-store';
+import { useUserStore } from '@/providers/store-provider';
 import {
     Sidebar,
     SidebarContent,

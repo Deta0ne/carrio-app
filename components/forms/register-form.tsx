@@ -22,13 +22,14 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
             email: '',
             password: '',
             confirmPassword: '',
+            name: '',
+            surname: '',
         },
     });
 
     async function onSubmit(data: RegisterInput) {
         setError(null);
         setLoading(true);
-
         try {
             const result = await register(data);
             if (result.success) {
@@ -75,6 +76,32 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
                                 <FormLabel>Email</FormLabel>
                                 <FormControl>
                                     <Input type="email" placeholder="m@example.com" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Name</FormLabel>
+                                <FormControl>
+                                    <Input type="text" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="surname"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Surname</FormLabel>
+                                <FormControl>
+                                    <Input type="text" {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>

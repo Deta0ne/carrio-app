@@ -1,4 +1,4 @@
-import { createStore } from 'zustand/vanilla';
+import {  createStore } from 'zustand';
 import { User } from '@supabase/supabase-js';
 import { Profile } from '@/services/profile-service';
 
@@ -7,6 +7,7 @@ interface UserState {
     setUser: (user: User | null) => void;
     profile: Profile | null;
     setProfile: (profile: Profile | null) => void;
+    updateProfile: (updatedProfile: Partial<Profile>) => void;
 }
 
 interface UserActions {
@@ -21,6 +22,7 @@ const defaultState: UserState = {
     profile: null,
     setUser: () => {},
     setProfile: () => {},
+    updateProfile: () => {},
 };
 
 export const createUserStore = (initState: UserState = defaultState) => {

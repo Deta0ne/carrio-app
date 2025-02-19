@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';
 import { createClient } from '@/utils/supabase/client';
-
+import { useUserStore } from '@/providers/store-provider';
 export function NavUser({
     user,
 }: {
@@ -29,6 +29,7 @@ export function NavUser({
     const { isMobile } = useSidebar();
     const router = useRouter();
     const supabase = createClient();
+    const profile = useUserStore((state) => state.profile);
 
     const handleSignOut = async () => {
         await supabase.auth.signOut();
@@ -46,7 +47,7 @@ export function NavUser({
                             className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                         >
                             <Avatar className="h-8 w-8 rounded-lg">
-                                <AvatarImage alt={user.name} src={user.avatar} />
+                                <AvatarImage alt={user.name} src={profile?.avatar_url} />
                                 <AvatarFallback className="rounded-lg">
                                     {user.name.charAt(0).toUpperCase()}
                                     {user.name.charAt(1).toUpperCase()}

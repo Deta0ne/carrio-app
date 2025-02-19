@@ -27,19 +27,40 @@ export async function login(data: LoginInput) {
 export async function register(data: RegisterInput) {
     const supabase = createClient();
 
-    const { error } = await supabase.auth.signUp({
+
+    const { data: authData, error: authError } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
         options: {
             emailRedirectTo: `${location.origin}/auth/callback`,
+            data: {
+                name: data.name,
+                surname: data.surname, 
+                avatar_url: null
+            }
         },
     });
 
-    if (error) {
-        if (error.message.includes('User already registered')) {
+    if (authError) {
+        if (authError.message.includes('User already registered')) {
             throw new Error('This email is already registered');
         } else {
             throw new Error('An error occurred during registration');
+        }
+    }
+
+    if (authData.user) {
+        const { error: profileError } = await supabase
+            .from('profiles')
+            .update({
+                name: data.name,
+                surname: data.surname,
+                updated_at: new Date().toISOString(),
+            })
+            .eq('id', authData.user.id);
+
+        if (profileError) {
+            throw new Error('Error updating profile');
         }
     }
 

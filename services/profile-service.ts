@@ -8,6 +8,7 @@ export interface Profile {
     job_title: string;
     experience: string;
     updated_at: string;
+    avatar_url: string;
 }
 
 export const profileService = {
@@ -21,7 +22,8 @@ export const profileService = {
                 name,
                 surname,
                 job_title,
-                experience
+                experience,
+                avatar_url
             `)
             .eq('id', userId)
             .single();

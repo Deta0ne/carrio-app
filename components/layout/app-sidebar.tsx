@@ -15,13 +15,12 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { NavMain, NavUser, NavProjects, NavSecondary } from '@/components/navigation';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Profile } from '@/services/profile-service';
 const data = {
     user: {
         name: 'shadcn',
         email: 'm@example.com',
-        avatar: '/avatars/shadcn.jpg',
+        avatar: '',
     },
     navMain: [
         {
@@ -163,7 +162,7 @@ export function AppSidebar({ initialUser, initialProfile, ...props }: AppSidebar
         ? {
               name: initialProfile?.name || user.user_metadata.full_name || user.email?.split('@')[0] || 'User',
               email: initialProfile?.email || user.email || '',
-              avatar: '',
+              avatar: initialProfile?.avatar_url || '',
           }
         : data.user;
 

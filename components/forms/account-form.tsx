@@ -1,24 +1,24 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
-import { createClient } from '@/utils/supabase/client';
 import { type User } from '@supabase/supabase-js';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ModeToggle } from '../ModeToggle';
 import { profileService } from '@/services/profile-service';
 import { useUserStore } from '@/providers/store-provider';
+import Avatar from './avatar';
 
 export default function AccountForm({ user }: { user: User | null }) {
-    const supabase = createClient();
     const [loading, setLoading] = useState(true);
     const [email, setEmail] = useState<string | null>(null);
     const [name, setName] = useState<string | null>(null);
     const [surname, setSurname] = useState<string | null>(null);
     const [jobTitle, setJobTitle] = useState<string | null>(null);
     const [experience, setExperience] = useState<string | null>(null);
+    const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
     const profile = useUserStore((state) => state.profile);
 
     useEffect(() => {
@@ -28,6 +28,7 @@ export default function AccountForm({ user }: { user: User | null }) {
             setSurname(profile.surname);
             setJobTitle(profile.job_title);
             setExperience(profile.experience);
+            setAvatarUrl(profile.avatar_url);
             setLoading(false);
         }
     }, [profile]);
@@ -35,13 +36,13 @@ export default function AccountForm({ user }: { user: User | null }) {
     async function updateProfile() {
         try {
             setLoading(true);
-
             await profileService.updateProfile(user?.id as string, {
                 email: email as string,
                 name: name as string,
                 surname: surname as string,
                 job_title: jobTitle as string,
                 experience: experience as string,
+                avatar_url: avatarUrl as string,
             });
             alert('Profile updated successfully!');
         } catch (error) {
@@ -50,13 +51,21 @@ export default function AccountForm({ user }: { user: User | null }) {
             setLoading(false);
         }
     }
-
     return (
         <Card className="w-full max-w-md mx-auto">
             <CardHeader>
                 <CardTitle>Account Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+                <Avatar
+                    uid={user?.id as string}
+                    url={avatarUrl}
+                    size={150}
+                    onUpload={(url) => {
+                        setAvatarUrl(url);
+                        updateProfile();
+                    }}
+                />
                 <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
                     <Input id="email" type="email" value={email || ''} onChange={(e) => setEmail(e.target.value)} />

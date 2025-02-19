@@ -30,5 +30,11 @@ export const createUserStore = (initState: UserState = defaultState) => {
         ...initState,
         setUser: (user) => set({ user }),
         setProfile: (profile) => set({ profile }),
+        updateProfile: (updatedProfile) => 
+            set((state) => ({
+                profile: state.profile 
+                    ? { ...state.profile, ...updatedProfile }
+                    : null
+            })),
     }));
 };

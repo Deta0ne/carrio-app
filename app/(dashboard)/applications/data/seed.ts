@@ -21,5 +21,3 @@ fs.writeFileSync(
   path.join(__dirname, "jobApplications.json"),
   JSON.stringify(jobApplications, null, 2)
 );
-
-console.log("✅ Job application data generated.");

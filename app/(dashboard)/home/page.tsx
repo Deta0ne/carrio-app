@@ -16,7 +16,14 @@ export default async function Home() {
     }
     return (
         <div>
-            Successfully logged in <Link href="/account">click here to go to account page</Link>
+            Successfully logged in{' '}
+            <Link href="/applications" className="text-blue-500">
+                click here to go to applications page.
+            </Link>
+            <br />
+            <Link href="/account" className="text-blue-500">
+                Click here to go to account page.
+            </Link>
             <HomePage />
         </div>
     );

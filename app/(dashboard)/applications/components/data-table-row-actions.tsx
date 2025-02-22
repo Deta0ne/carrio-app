@@ -18,15 +18,15 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-import { statuses } from '../data/data'; // Status seçenekleri
-import { jobApplicationSchema } from '../data/schema'; // Güncellenmiş şema
+import { statuses } from '../data/data';
+import { jobApplicationSchema } from '../data/schema';
 
 interface DataTableRowActionsProps<TData> {
     row: Row<TData>;
 }
 
 export function DataTableRowActions<TData>({ row }: DataTableRowActionsProps<TData>) {
-    const jobApplication = jobApplicationSchema.parse(row.original); // Doğrulama
+    const jobApplication = jobApplicationSchema.parse(row.original);
 
     return (
         <DropdownMenu>
@@ -41,7 +41,6 @@ export function DataTableRowActions<TData>({ row }: DataTableRowActionsProps<TDa
                 <DropdownMenuItem>Duplicate</DropdownMenuItem>
                 <DropdownMenuSeparator />
 
-                {/* Status Güncelleme */}
                 <DropdownMenuSub>
                     <DropdownMenuSubTrigger>Change Status</DropdownMenuSubTrigger>
                     <DropdownMenuSubContent>

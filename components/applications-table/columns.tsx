@@ -7,6 +7,14 @@ import { DataTableColumnHeader } from './data-table-column-header';
 import { DataTableRowActions } from './data-table-row-actions';
 import { format } from 'date-fns';
 import { JobApplication } from '@/types/database';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
+// Yardımcı fonksiyon
+const truncateText = (text: string, limit: number) => {
+    if (text.length <= limit) return text;
+    return text.slice(0, limit) + '...';
+};
+
 export const columns: ColumnDef<JobApplication>[] = [
     {
         id: 'select',
@@ -32,12 +40,44 @@ export const columns: ColumnDef<JobApplication>[] = [
     {
         accessorKey: 'company_name',
         header: ({ column }) => <DataTableColumnHeader column={column} title="Company" />,
-        cell: ({ row }) => <span className="font-medium">{row.getValue('company_name')}</span>,
+        cell: ({ row }) => {
+            const value = row.getValue('company_name') as string;
+            return (
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span className="font-medium">{truncateText(value, 30)}</span>
+                        </TooltipTrigger>
+                        {value.length > 30 && (
+                            <TooltipContent>
+                                <p>{value}</p>
+                            </TooltipContent>
+                        )}
+                    </Tooltip>
+                </TooltipProvider>
+            );
+        },
     },
     {
         accessorKey: 'position',
         header: ({ column }) => <DataTableColumnHeader column={column} title="Position" />,
-        cell: ({ row }) => <span>{row.getValue('position')}</span>,
+        cell: ({ row }) => {
+            const value = row.getValue('position') as string;
+            return (
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span className="truncate block max-w-[250px]">{truncateText(value, 40)}</span>
+                        </TooltipTrigger>
+                        {value.length > 40 && (
+                            <TooltipContent>
+                                <p>{value}</p>
+                            </TooltipContent>
+                        )}
+                    </Tooltip>
+                </TooltipProvider>
+            );
+        },
     },
     {
         accessorKey: 'application_date',

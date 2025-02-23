@@ -163,7 +163,12 @@ function ApplicationForm({ className, onSuccess }: { className?: string; onSucce
                                 <FormItem>
                                     <FormLabel>Company Name</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Enter company name" {...field} />
+                                        <div className="relative">
+                                            <Input placeholder="Enter company name" maxLength={100} {...field} />
+                                            <span className="absolute right-2 top-2 text-xs text-muted-foreground">
+                                                {field.value.length}/100
+                                            </span>
+                                        </div>
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -176,7 +181,12 @@ function ApplicationForm({ className, onSuccess }: { className?: string; onSucce
                                 <FormItem>
                                     <FormLabel>Position</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Enter position title" {...field} />
+                                        <div className="relative">
+                                            <Input placeholder="Enter position title" maxLength={150} {...field} />
+                                            <span className="absolute right-2 top-2 text-xs text-muted-foreground">
+                                                {field.value.length}/150
+                                            </span>
+                                        </div>
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

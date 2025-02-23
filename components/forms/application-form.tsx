@@ -23,8 +23,7 @@ import {
     DrawerTrigger,
 } from '@/components/ui/drawer';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -32,11 +31,13 @@ import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { jobApplicationSchema } from '@/app/(dashboard)/applications/data/schema';
-import { z } from 'zod';
 import { Badge } from '@/components/ui/badge';
+import { useRouter } from 'next/navigation';
+import { applicationFormSchema, ApplicationFormValues } from '@/lib/validations/application';
+import { toast } from 'sonner';
+import { createClient } from '@/utils/supabase/client';
 
-export function DrawerDialogDemo() {
+export function ApplicationCreate() {
     const [open, setOpen] = React.useState(false);
     const isDesktop = useMediaQuery('(min-width: 768px)');
 
@@ -51,7 +52,7 @@ export function DrawerDialogDemo() {
                         <DialogTitle>Create Application</DialogTitle>
                         <DialogDescription>Create a new application to track your job search.</DialogDescription>
                     </DialogHeader>
-                    <ApplicationForm />
+                    <ApplicationForm onSuccess={() => setOpen(false)} />
                 </DialogContent>
             </Dialog>
         );
@@ -60,16 +61,14 @@ export function DrawerDialogDemo() {
     return (
         <Drawer open={open} onOpenChange={setOpen}>
             <DrawerTrigger asChild>
-                <Button variant="outline">Edit Profile</Button>
+                <Button variant="outline">Create Application</Button>
             </DrawerTrigger>
             <DrawerContent>
                 <DrawerHeader className="text-left">
-                    <DrawerTitle>Edit profile</DrawerTitle>
-                    <DrawerDescription>
-                        Make changes to your profile here. Click save when you're done.
-                    </DrawerDescription>
+                    <DrawerTitle>Create Application</DrawerTitle>
+                    <DrawerDescription>Create a new application to track your job search.</DrawerDescription>
                 </DrawerHeader>
-                <ApplicationForm className="px-4" />
+                <ApplicationForm className="px-4" onSuccess={() => setOpen(false)} />
                 <DrawerFooter className="pt-2">
                     <DrawerClose asChild>
                         <Button variant="outline">Cancel</Button>
@@ -81,35 +80,85 @@ export function DrawerDialogDemo() {
 }
 
 const sourceOptions = [
-    { value: 'linkedin', label: 'LinkedIn' },
-    { value: 'indeed', label: 'Indeed' },
-    { value: 'glassdoor', label: 'Glassdoor' },
-    { value: 'career_net', label: 'Career.net' },
-    { value: 'company_website', label: 'Company Website' },
-    { value: 'other', label: 'Other' },
+    { value: 'LinkedIn', label: 'LinkedIn' },
+    { value: 'Company Website', label: 'Company Website' },
+    { value: 'Indeed', label: 'Indeed' },
+    { value: 'GitHub Jobs', label: 'GitHub Jobs' },
+    { value: 'Career Website', label: 'Career Website' },
+    { value: 'Other', label: 'Other' },
 ];
 
-function ApplicationForm({ className }: React.ComponentProps<'div'>) {
-    const form = useForm<z.infer<typeof jobApplicationSchema>>({
-        resolver: zodResolver(jobApplicationSchema),
+function ApplicationForm({ className, onSuccess }: { className?: string; onSuccess?: () => void }) {
+    const supabase = createClient();
+    const router = useRouter();
+    const [isLoading, setIsLoading] = React.useState(false);
+
+    const form = useForm<ApplicationFormValues>({
+        resolver: zodResolver(applicationFormSchema),
         defaultValues: {
-            companyName: '',
+            company_name: '',
             position: '',
             status: 'pending',
-            source: 'linkedin',
-            applicationDate: new Date().toISOString(),
-            interviewDate: null,
-            companyWebsite: '',
+            application_date: new Date(),
+            interview_date: null,
+            source: 'LinkedIn',
+            company_website: '',
         },
     });
+
+    async function onSubmit(values: ApplicationFormValues) {
+        setIsLoading(true);
+        try {
+            const {
+                data: { user },
+            } = await supabase.auth.getUser();
+            if (!user) throw new Error('Not authenticated');
+
+            const applicationDate = new Date(values.application_date);
+            const applicationDateUTC = new Date(
+                applicationDate.getTime() - applicationDate.getTimezoneOffset() * 60000,
+            );
+
+            const interviewDate = values.interview_date
+                ? new Date(values.interview_date.getTime() - values.interview_date.getTimezoneOffset() * 60000)
+                : null;
+
+            const { error } = await supabase.from('job_applications').insert({
+                user_id: user.id,
+                company_name: values.company_name,
+                position: values.position,
+                status: values.status,
+                application_date: applicationDateUTC.toISOString().split('T')[0],
+                interview_date: interviewDate?.toISOString().split('T')[0] || null,
+                source: values.source,
+                company_website: values.company_website || null,
+            });
+
+            if (error) throw error;
+
+            toast.success('Application created successfully', {
+                description: `${values.position} at ${values.company_name}`,
+            });
+            form.reset();
+            router.refresh();
+            onSuccess?.();
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to create application', {
+                description: 'Please try again later.',
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    }
 
     return (
         <div className={cn('grid gap-6', className)}>
             <Form {...form}>
-                <div className="grid grid-cols-1 gap-4">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 gap-4">
                     <div className="space-y-4">
                         <FormField
-                            name="companyName"
+                            name="company_name"
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Company Name</FormLabel>
@@ -135,7 +184,7 @@ function ApplicationForm({ className }: React.ComponentProps<'div'>) {
                         />
 
                         <FormField
-                            name="applicationDate"
+                            name="application_date"
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Application Date</FormLabel>
@@ -187,11 +236,11 @@ function ApplicationForm({ className }: React.ComponentProps<'div'>) {
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            <SelectItem value="planned">Planned</SelectItem>
                                             <SelectItem value="pending">Pending</SelectItem>
-                                            <SelectItem value="interview">Interview</SelectItem>
-                                            <SelectItem value="offer">Offer</SelectItem>
+                                            <SelectItem value="interview_stage">Interview</SelectItem>
+                                            <SelectItem value="offer_received">Offer</SelectItem>
                                             <SelectItem value="rejected">Rejected</SelectItem>
+                                            <SelectItem value="planned">Planned</SelectItem>
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />
@@ -224,7 +273,7 @@ function ApplicationForm({ className }: React.ComponentProps<'div'>) {
                         />
 
                         <FormField
-                            name="interviewDate"
+                            name="interview_date"
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Interview Date (Optional)</FormLabel>
@@ -261,7 +310,7 @@ function ApplicationForm({ className }: React.ComponentProps<'div'>) {
                             )}
                         />
                         <FormField
-                            name="companyWebsite"
+                            name="company_website"
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Company Website (Optional)</FormLabel>
@@ -273,11 +322,11 @@ function ApplicationForm({ className }: React.ComponentProps<'div'>) {
                             )}
                         />
                     </div>
-                </div>
 
-                <Button type="submit" className="w-full mt-6">
-                    Submit Application
-                </Button>
+                    <Button type="submit" className="w-full mt-6" disabled={isLoading}>
+                        {isLoading ? 'Submitting...' : 'Submit Application'}
+                    </Button>
+                </form>
             </Form>
         </div>
     );

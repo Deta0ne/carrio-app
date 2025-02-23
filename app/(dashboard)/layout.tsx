@@ -3,6 +3,7 @@ import { AppSidebar } from '@/components/layout/app-sidebar';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { createClient } from '@/utils/supabase/server';
 import { Header } from '@/components/layout/header';
+import { Toaster } from 'sonner';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
     const supabase = await createClient();
@@ -37,6 +38,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
                     <AppProvider>{children}</AppProvider>
                 </div>
             </SidebarInset>
+            <Toaster richColors position="top-right" />
         </SidebarProvider>
     );
 }

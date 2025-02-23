@@ -1,15 +1,12 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-
-import { statuses } from '../data/data';
-import { JobApplication, jobApplicationSchema } from '../data/schema';
 import { DataTableColumnHeader } from './data-table-column-header';
 import { DataTableRowActions } from './data-table-row-actions';
-
+import { format } from 'date-fns';
+import { JobApplication } from '@/types/database';
 export const columns: ColumnDef<JobApplication>[] = [
     {
         id: 'select',
@@ -33,16 +30,9 @@ export const columns: ColumnDef<JobApplication>[] = [
         enableHiding: false,
     },
     {
-        accessorKey: 'id',
-        header: ({ column }) => <DataTableColumnHeader column={column} title="ID" />,
-        cell: ({ row }) => <div className="w-[50px]">{row.getValue('id')}</div>,
-        enableSorting: false,
-        enableHiding: false,
-    },
-    {
-        accessorKey: 'companyName',
+        accessorKey: 'company_name',
         header: ({ column }) => <DataTableColumnHeader column={column} title="Company" />,
-        cell: ({ row }) => <span className="font-medium">{row.getValue('companyName')}</span>,
+        cell: ({ row }) => <span className="font-medium">{row.getValue('company_name')}</span>,
     },
     {
         accessorKey: 'position',
@@ -50,40 +40,48 @@ export const columns: ColumnDef<JobApplication>[] = [
         cell: ({ row }) => <span>{row.getValue('position')}</span>,
     },
     {
-        accessorKey: 'applicationDate',
+        accessorKey: 'application_date',
         header: ({ column }) => <DataTableColumnHeader column={column} title="Applied On" />,
-        cell: ({ row }) => <span>{row.getValue('applicationDate')}</span>,
+        cell: ({ row }) => {
+            const date = row.getValue('application_date') as string;
+            return <span>{format(new Date(date), 'PP')}</span>;
+        },
     },
     {
         accessorKey: 'status',
         header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
         cell: ({ row }) => {
-            const status = statuses.find((status) => status.value === row.getValue('status'));
-
-            if (!status) {
-                return null;
-            }
-
+            const status = row.getValue('status') as string;
             return (
-                <div className="flex w-[120px] items-center">
-                    {status.icon && <status.icon className="mr-2 h-4 w-4 text-muted-foreground" />}
-                    <span>{status.label}</span>
+                <div className="flex w-[100px] items-center">
+                    {status === 'planned' && <Badge variant="secondary">Planned</Badge>}
+                    {status === 'pending' && <Badge variant="outline">Pending</Badge>}
+                    {status === 'interview_stage' && <Badge variant="default">Interview</Badge>}
+                    {status === 'offer_received' && <Badge variant="secondary">Offer</Badge>}
+                    {status === 'rejected' && <Badge variant="destructive">Rejected</Badge>}
                 </div>
             );
         },
         filterFn: (row, id, value) => value.includes(row.getValue(id)),
     },
     {
-        accessorKey: 'lastUpdate',
+        accessorKey: 'last_update',
         header: ({ column }) => <DataTableColumnHeader column={column} title="Last Update" />,
-        cell: ({ row }) => <span>{row.getValue('lastUpdate')}</span>,
+        cell: ({ row }) => {
+            const date = row.getValue('last_update') as string | null;
+            return date ? <span>{format(new Date(date), 'PP')}</span> : null;
+        },
     },
     {
-        accessorKey: 'interviewDate',
+        accessorKey: 'interview_date',
         header: ({ column }) => <DataTableColumnHeader column={column} title="Interview Date" />,
         cell: ({ row }) => {
-            const date = row.getValue('interviewDate') as string | null;
-            return date ? <span>{date}</span> : <span className="text-muted">Not Scheduled</span>;
+            const date = row.getValue('interview_date') as string | null;
+            return date ? (
+                <span>{format(new Date(date), 'PP')}</span>
+            ) : (
+                <span className="text-muted-foreground">Not Scheduled</span>
+            );
         },
     },
     {
@@ -92,6 +90,7 @@ export const columns: ColumnDef<JobApplication>[] = [
         cell: ({ row }) => {
             return <Badge variant="outline">{row.getValue('source')}</Badge>;
         },
+        filterFn: (row, id, value) => value.includes(row.getValue(id)),
     },
     {
         id: 'actions',

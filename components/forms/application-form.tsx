@@ -192,7 +192,32 @@ function ApplicationForm({ className, onSuccess }: { className?: string; onSucce
                                 </FormItem>
                             )}
                         />
+                    </div>
 
+                    <div className="space-y-4">
+                        <FormField
+                            name="status"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Application Status</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select status" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="pending">Pending</SelectItem>
+                                            <SelectItem value="interview_stage">Interview</SelectItem>
+                                            <SelectItem value="offer_received">Offer</SelectItem>
+                                            <SelectItem value="rejected">Rejected</SelectItem>
+                                            <SelectItem value="planned">Planned</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
                         <FormField
                             name="application_date"
                             render={({ field }) => (
@@ -222,7 +247,13 @@ function ApplicationForm({ className, onSuccess }: { className?: string; onSucce
                                                 mode="single"
                                                 selected={field.value}
                                                 onSelect={field.onChange}
-                                                disabled={(date) => date > new Date() || date < new Date('1900-01-01')}
+                                                disabled={(date) => {
+                                                    const status = form.getValues('status');
+                                                    if (status === 'planned') {
+                                                        return date < new Date(new Date().setHours(0, 0, 0, 0));
+                                                    }
+                                                    return date > new Date(new Date().setHours(23, 59, 59, 999));
+                                                }}
                                                 initialFocus
                                             />
                                         </PopoverContent>
@@ -231,33 +262,6 @@ function ApplicationForm({ className, onSuccess }: { className?: string; onSucce
                                 </FormItem>
                             )}
                         />
-                    </div>
-
-                    <div className="space-y-4">
-                        <FormField
-                            name="status"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Application Status</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select status" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            <SelectItem value="pending">Pending</SelectItem>
-                                            <SelectItem value="interview_stage">Interview</SelectItem>
-                                            <SelectItem value="offer_received">Offer</SelectItem>
-                                            <SelectItem value="rejected">Rejected</SelectItem>
-                                            <SelectItem value="planned">Planned</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-
                         <FormField
                             name="source"
                             render={({ field }) => (

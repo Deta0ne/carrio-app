@@ -9,7 +9,6 @@ import { format } from 'date-fns';
 import { JobApplication } from '@/types/database';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-// Yardımcı fonksiyon
 const truncateText = (text: string, limit: number) => {
     if (text.length <= limit) return text;
     return text.slice(0, limit) + '...';

@@ -34,8 +34,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Badge } from '@/components/ui/badge';
 import { useRouter } from 'next/navigation';
 import { applicationFormSchema, ApplicationFormValues } from '@/lib/validations/application';
-import { toast } from 'sonner';
-import { createClient } from '@/utils/supabase/client';
+import { applicationsService } from '@/services/applications-service';
 
 export function ApplicationCreate() {
     const [open, setOpen] = React.useState(false);
@@ -89,7 +88,6 @@ const sourceOptions = [
 ];
 
 function ApplicationForm({ className, onSuccess }: { className?: string; onSuccess?: () => void }) {
-    const supabase = createClient();
     const router = useRouter();
     const [isLoading, setIsLoading] = React.useState(false);
 
@@ -109,44 +107,13 @@ function ApplicationForm({ className, onSuccess }: { className?: string; onSucce
     async function onSubmit(values: ApplicationFormValues) {
         setIsLoading(true);
         try {
-            const {
-                data: { user },
-            } = await supabase.auth.getUser();
-            if (!user) throw new Error('Not authenticated');
+            const success = await applicationsService.createApplication(values);
 
-            const applicationDate = new Date(values.application_date);
-            const applicationDateUTC = new Date(
-                applicationDate.getTime() - applicationDate.getTimezoneOffset() * 60000,
-            );
-
-            const interviewDate = values.interview_date
-                ? new Date(values.interview_date.getTime() - values.interview_date.getTimezoneOffset() * 60000)
-                : null;
-
-            const { error } = await supabase.from('job_applications').insert({
-                user_id: user.id,
-                company_name: values.company_name,
-                position: values.position,
-                status: values.status,
-                application_date: applicationDateUTC.toISOString().split('T')[0],
-                interview_date: interviewDate?.toISOString().split('T')[0] || null,
-                source: values.source,
-                company_website: values.company_website || null,
-            });
-
-            if (error) throw error;
-
-            toast.success('Application created successfully', {
-                description: `${values.position} at ${values.company_name}`,
-            });
-            form.reset();
-            router.refresh();
-            onSuccess?.();
-        } catch (error) {
-            console.error(error);
-            toast.error('Failed to create application', {
-                description: 'Please try again later.',
-            });
+            if (success) {
+                form.reset();
+                router.refresh();
+                onSuccess?.();
+            }
         } finally {
             setIsLoading(false);
         }

@@ -26,6 +26,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { JobApplication } from '@/types/database';
 import { format } from 'date-fns';
+import { applicationsService } from '@/services/applications-service';
+import { useRouter } from 'next/navigation';
+import { DeleteApplicationDialog } from '@/components/applications-table/delete-application-dialog';
 
 export const JobTypeBadge = ({ type }: { type: string }) => {
     const badgeStyles = {
@@ -52,10 +55,18 @@ export const JobTypeBadge = ({ type }: { type: string }) => {
 interface JobCardProps {
     job: JobApplication;
     onEdit?: () => void;
-    onDelete?: () => void;
 }
 
-const JobCard = ({ job, onEdit, onDelete }: JobCardProps) => {
+const JobCard = ({ job, onEdit }: JobCardProps) => {
+    const router = useRouter();
+
+    const handleDelete = async () => {
+        const success = await applicationsService.deleteApplication(job.id);
+        if (success) {
+            router.refresh();
+        }
+    };
+
     const statusIcons = {
         interview_stage: Users,
         rejected: XCircle,
@@ -149,13 +160,15 @@ const JobCard = ({ job, onEdit, onDelete }: JobCardProps) => {
                                         <Pencil size={14} />
                                         <span>Edit</span>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                        className="flex items-center gap-2 cursor-pointer text-destructive focus:text-destructive"
-                                        onClick={onDelete}
-                                    >
-                                        <Trash2 size={14} />
-                                        <span>Delete</span>
-                                    </DropdownMenuItem>
+                                    <DeleteApplicationDialog job={job} onDelete={handleDelete}>
+                                        <DropdownMenuItem
+                                            className="flex items-center gap-2 cursor-pointer text-destructive focus:text-destructive"
+                                            onSelect={(e) => e.preventDefault()}
+                                        >
+                                            <Trash2 size={14} />
+                                            <span>Delete</span>
+                                        </DropdownMenuItem>
+                                    </DeleteApplicationDialog>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>

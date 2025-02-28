@@ -112,7 +112,7 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
                 <div className="grid grid-cols-1 gap-4">
                     {table.getRowModel().rows.map((row) => {
                         const application = row.original as JobApplication;
-                        return <JobCard key={application.id} job={application} onEdit={() => {}} onDelete={() => {}} />;
+                        return <JobCard key={application.id} job={application} onEdit={() => {}} />;
                     })}
                 </div>
             )}

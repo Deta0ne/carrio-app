@@ -15,7 +15,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { JobApplication } from '@/types/database';
 import { applicationsService } from '@/services/applications-service';
-import { DeleteApplicationDialog } from '@/components/applications-table/delete-application-dialog';
+import { DeleteApplicationDialog } from '@/components/applications-table/index';
 
 interface DataTableRowActionsProps {
     row: Row<JobApplication>;

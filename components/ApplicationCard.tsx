@@ -16,7 +16,6 @@ import {
     Link2,
     ArrowUpRight,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import {
     DropdownMenu,
@@ -28,29 +27,7 @@ import { JobApplication } from '@/types/database';
 import { format } from 'date-fns';
 import { applicationsService } from '@/services/applications-service';
 import { useRouter } from 'next/navigation';
-import { DeleteApplicationDialog } from '@/components/applications-table/delete-application-dialog';
-
-export const JobTypeBadge = ({ type }: { type: string }) => {
-    const badgeStyles = {
-        interview_stage: 'bg-[#22C55E] text-white hover:bg-[#22C55E]/90',
-        rejected: 'bg-[#DC2626] text-white hover:bg-[#DC2626]/90',
-        offer_received: 'bg-zinc-700 text-white hover:bg-zinc-700/90',
-        planned: 'bg-zinc-800 text-white hover:bg-zinc-800/90',
-        pending: 'bg-black text-white hover:bg-black/90 border border-zinc-800',
-    };
-
-    const style = badgeStyles[type as keyof typeof badgeStyles] || 'bg-zinc-800 text-white';
-
-    return (
-        <Badge variant="outline" className={cn('text-xs py-1 px-2 rounded-md border-0', style)}>
-            {type === 'interview_stage' && 'Interview'}
-            {type === 'rejected' && 'Rejected'}
-            {type === 'offer_received' && 'Offer'}
-            {type === 'planned' && 'Planned'}
-            {type === 'pending' && 'Pending'}
-        </Badge>
-    );
-};
+import { DeleteApplicationDialog } from '@/components/applications-table/index';
 
 interface JobCardProps {
     job: JobApplication;
@@ -99,7 +76,11 @@ const JobCard = ({ job, onEdit }: JobCardProps) => {
             <CardContent className="p-6 pt-2 pb-3 flex-grow">
                 {/* Status badge */}
                 <div className="mb-4 flex flex-wrap gap-2">
-                    <JobTypeBadge type={job.status} />
+                    {job.status === 'planned' && <Badge variant="secondary">Planned</Badge>}
+                    {job.status === 'pending' && <Badge variant="outline">Pending</Badge>}
+                    {job.status === 'interview_stage' && <Badge variant="default">Interview</Badge>}
+                    {job.status === 'offer_received' && <Badge variant="secondary">Offer</Badge>}
+                    {job.status === 'rejected' && <Badge variant="destructive">Rejected</Badge>}
                 </div>
 
                 {/* Company details */}

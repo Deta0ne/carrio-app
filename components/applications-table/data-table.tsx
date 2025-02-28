@@ -16,8 +16,7 @@ import {
     useReactTable,
 } from '@tanstack/react-table';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { DataTablePagination } from '@/components/applications-table/data-table-pagination';
-import { DataTableToolbar } from '@/components/applications-table/data-table-toolbar';
+import { DataTablePagination, DataTableToolbar } from '@/components/applications-table/index';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import JobCard from '@/components/ApplicationCard';
 import { JobApplication } from '@/types/database';

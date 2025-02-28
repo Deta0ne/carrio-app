@@ -3,7 +3,7 @@ export interface JobApplication {
     user_id: string
     company_name: string
     position: string
-    status: 'PLANNED' | 'PENDING' | 'INTERVIEW' | 'OFFER' | 'REJECTED'
+    status: 'planned' | 'pending' | 'interview_stage' | 'offer_received' | 'rejected'
     application_date: string
     interview_date: string | null
     source: string

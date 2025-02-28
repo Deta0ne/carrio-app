@@ -1,7 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { Metadata } from 'next';
-import { columns } from '../../../components/applications-table/columns';
-import { DataTable } from '../../../components/applications-table/data-table';
+import { columns, DataTable } from '@/components/applications-table/index';
 import { ApplicationCreate } from '@/components/forms/application-form';
 import { redirect } from 'next/navigation';
 export const dynamic = 'force-dynamic';

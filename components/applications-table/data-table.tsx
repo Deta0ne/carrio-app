@@ -15,11 +15,11 @@ import {
     getSortedRowModel,
     useReactTable,
 } from '@tanstack/react-table';
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-
-import { DataTablePagination } from '@/components/applications-table/data-table-pagination';
-import { DataTableToolbar } from '@/components/applications-table/data-table-toolbar';
+import { DataTablePagination, DataTableToolbar } from '@/components/applications-table/index';
+import { useMediaQuery } from '@/hooks/use-media-query';
+import JobCard from '@/components/ApplicationCard';
+import { JobApplication } from '@/types/database';
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[];
@@ -31,6 +31,7 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
     const [sorting, setSorting] = React.useState<SortingState>([]);
+    const isDesktop = useMediaQuery('(min-width: 768px)');
 
     const table = useReactTable({
         data,
@@ -57,49 +58,63 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
     return (
         <div className="space-y-4">
             <DataTableToolbar table={table} />
-            <div className="overflow-auto rounded-md border">
-                <Table>
-                    <TableHeader>
-                        {table.getHeaderGroups().map((headerGroup) => (
-                            <TableRow key={headerGroup.id}>
-                                {headerGroup.headers.map((header) => {
-                                    return (
-                                        <TableHead
-                                            key={header.id}
-                                            colSpan={header.colSpan}
-                                            className="whitespace-nowrap"
-                                        >
-                                            {header.isPlaceholder
-                                                ? null
-                                                : flexRender(header.column.columnDef.header, header.getContext())}
-                                        </TableHead>
-                                    );
-                                })}
-                            </TableRow>
-                        ))}
-                    </TableHeader>
-                    <TableBody>
-                        {table.getRowModel().rows?.length ? (
-                            table.getRowModel().rows.map((row) => (
-                                <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
-                                    {row.getVisibleCells().map((cell) => (
-                                        <TableCell key={cell.id} className="whitespace-nowrap">
-                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+            {isDesktop ? (
+                <>
+                    <div className="overflow-auto rounded-md border">
+                        <Table>
+                            <TableHeader>
+                                {table.getHeaderGroups().map((headerGroup) => (
+                                    <TableRow key={headerGroup.id}>
+                                        {headerGroup.headers.map((header) => {
+                                            return (
+                                                <TableHead
+                                                    key={header.id}
+                                                    colSpan={header.colSpan}
+                                                    className="whitespace-nowrap"
+                                                >
+                                                    {header.isPlaceholder
+                                                        ? null
+                                                        : flexRender(
+                                                              header.column.columnDef.header,
+                                                              header.getContext(),
+                                                          )}
+                                                </TableHead>
+                                            );
+                                        })}
+                                    </TableRow>
+                                ))}
+                            </TableHeader>
+                            <TableBody>
+                                {table.getRowModel().rows?.length ? (
+                                    table.getRowModel().rows.map((row) => (
+                                        <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+                                            {row.getVisibleCells().map((cell) => (
+                                                <TableCell key={cell.id} className="whitespace-nowrap">
+                                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                                </TableCell>
+                                            ))}
+                                        </TableRow>
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={columns.length} className="h-24 text-center">
+                                            No job applications found.
                                         </TableCell>
-                                    ))}
-                                </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell colSpan={columns.length} className="h-24 text-center">
-                                    No job applications found.
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
-            <DataTablePagination table={table} />
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+                    <DataTablePagination table={table} />
+                </>
+            ) : (
+                <div className="grid grid-cols-1 gap-4">
+                    {table.getRowModel().rows.map((row) => {
+                        const application = row.original as JobApplication;
+                        return <JobCard key={application.id} job={application} onEdit={() => {}} />;
+                    })}
+                </div>
+            )}
         </div>
     );
 }

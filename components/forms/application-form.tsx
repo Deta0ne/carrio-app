@@ -68,11 +68,6 @@ export function ApplicationCreate() {
                     <DrawerDescription>Create a new application to track your job search.</DrawerDescription>
                 </DrawerHeader>
                 <ApplicationForm className="px-4" onSuccess={() => setOpen(false)} />
-                <DrawerFooter className="pt-2">
-                    <DrawerClose asChild>
-                        <Button variant="outline">Cancel</Button>
-                    </DrawerClose>
-                </DrawerFooter>
             </DrawerContent>
         </Drawer>
     );
@@ -234,20 +229,39 @@ function ApplicationForm({ className, onSuccess }: { className?: string; onSucce
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Application Source</FormLabel>
-                                    <FormControl>
-                                        <div className="flex flex-wrap gap-2">
-                                            {sourceOptions.map((option) => (
-                                                <Badge
-                                                    key={option.value}
-                                                    variant={field.value === option.value ? 'default' : 'outline'}
-                                                    className="cursor-pointer hover:bg-primary/80"
-                                                    onClick={() => field.onChange(option.value)}
-                                                >
-                                                    {option.label}
-                                                </Badge>
-                                            ))}
-                                        </div>
-                                    </FormControl>
+                                    <div className=" md:hidden">
+                                        <FormControl>
+                                            <Select value={field.value} onValueChange={field.onChange}>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select source" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {sourceOptions.map((option) => (
+                                                        <SelectItem key={option.value} value={option.value}>
+                                                            {option.label}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </FormControl>
+                                    </div>
+
+                                    <div className="hidden md:block">
+                                        <FormControl>
+                                            <div className="flex flex-wrap gap-2">
+                                                {sourceOptions.map((option) => (
+                                                    <Badge
+                                                        key={option.value}
+                                                        variant={field.value === option.value ? 'default' : 'outline'}
+                                                        className="cursor-pointer hover:bg-primary/80"
+                                                        onClick={() => field.onChange(option.value)}
+                                                    >
+                                                        {option.label}
+                                                    </Badge>
+                                                ))}
+                                            </div>
+                                        </FormControl>
+                                    </div>
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -304,7 +318,7 @@ function ApplicationForm({ className, onSuccess }: { className?: string; onSucce
                         />
                     </div>
 
-                    <Button type="submit" className="w-full mt-6" disabled={isLoading}>
+                    <Button type="submit" className="w-full mb-2" disabled={isLoading}>
                         {isLoading ? 'Submitting...' : 'Submit Application'}
                     </Button>
                 </form>

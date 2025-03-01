@@ -60,7 +60,7 @@ export function ApplicationCreate() {
     return (
         <Drawer open={open} onOpenChange={setOpen}>
             <DrawerTrigger asChild>
-                <Button variant="outline">Create Application</Button>
+                <Button>Create</Button>
             </DrawerTrigger>
             <DrawerContent>
                 <DrawerHeader className="text-left">

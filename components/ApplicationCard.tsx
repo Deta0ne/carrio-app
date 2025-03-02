@@ -28,6 +28,7 @@ import { format } from 'date-fns';
 import { applicationsService } from '@/services/applications-service';
 import { useRouter } from 'next/navigation';
 import { DeleteApplicationDialog } from '@/components/applications-table/index';
+import Link from 'next/link';
 
 interface JobCardProps {
     job: JobApplication;
@@ -96,13 +97,14 @@ const JobCard = ({ job, onEdit }: JobCardProps) => {
                 </div>
 
                 {job.company_website && (
-                    <Button
-                        variant="link"
+                    <Link
+                        href={job.company_website}
+                        target="_blank"
                         className="text-primary px-0 py-0 h-auto text-sm flex items-center gap-1 mt-2"
                     >
                         <span>Visit company website</span>
                         <ExternalLink size={14} />
-                    </Button>
+                    </Link>
                 )}
             </CardContent>
 

@@ -21,12 +21,12 @@ import { useMediaQuery } from '@/hooks/use-media-query';
 import JobCard from '@/components/ApplicationCard';
 import { JobApplication } from '@/types/database';
 
-interface DataTableProps<TData, TValue> {
+interface DataTableProps<TData extends { id: string }, TValue> {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
 }
 
-export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData, TValue>) {
+export function DataTable<TData extends { id: string }, TValue>({ columns, data }: DataTableProps<TData, TValue>) {
     const [rowSelection, setRowSelection] = React.useState({});
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -110,7 +110,7 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
             ) : (
                 <div className="grid grid-cols-1 gap-4">
                     {table.getRowModel().rows.map((row) => {
-                        const application = row.original as JobApplication;
+                        const application = row.original as unknown as JobApplication;
                         return <JobCard key={application.id} job={application} onEdit={() => {}} />;
                     })}
                 </div>

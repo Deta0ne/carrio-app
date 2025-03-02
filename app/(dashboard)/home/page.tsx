@@ -1,30 +1,44 @@
-import React from 'react';
-import Link from 'next/link';
-import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
-import { HomePage } from '@/components/pages/home-page';
+import { Metadata } from 'next';
+import { columns, DataTable } from '@/components/applications-table/index';
+import { ApplicationCreate } from '@/components/forms/application-form';
+import { redirect } from 'next/navigation';
+export const dynamic = 'force-dynamic';
 
-export default async function Home() {
+export const metadata: Metadata = {
+    title: 'Applications',
+    description: 'A list of your job applications',
+};
+
+export default async function ApplicationsPage() {
     const supabase = await createClient();
 
+    // Get user
     const {
-        data: { session },
-    } = await supabase.auth.getSession();
+        data: { user },
+    } = await supabase.auth.getUser();
 
-    if (!session) {
+    if (!user) {
         redirect('/login');
     }
+
+    // Get applications
+    const { data: applications } = await supabase
+        .from('job_applications')
+        .select('*')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false });
+
     return (
-        <div>
-            Successfully logged in{' '}
-            <Link href="/applications" className="text-blue-500">
-                click here to go to applications page.
-            </Link>
-            <br />
-            <Link href="/account" className="text-blue-500">
-                Click here to go to account page.
-            </Link>
-            <HomePage />
+        <div className="h-full flex-1 flex-col space-y-8 md:p-8">
+            <div className="flex items-center justify-between space-y-2">
+                <div>
+                    <h2 className="text-2xl font-bold tracking-tight">Welcome back!</h2>
+                    <p className="text-muted-foreground">Here&apos;s a list of your job applications</p>
+                </div>
+                <ApplicationCreate />
+            </div>
+            <DataTable data={applications || []} columns={columns} />
         </div>
     );
 }

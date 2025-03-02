@@ -58,5 +58,23 @@ export const applicationsService = {
             });
             return false;
         }
+    },
+
+    async deleteMultipleApplications(ids: string[]) {
+        try {
+            const { error } = await supabase
+                .from('job_applications')
+                .delete()
+                .in('id', ids);
+
+            if (error) throw error;
+
+            toast.success(`${ids.length} applications deleted successfully`);
+            return true;
+        } catch (error) {
+            console.error('Error deleting applications:', error);
+            toast.error('Failed to delete applications');
+            return false;
+        }
     }
 };

@@ -176,7 +176,7 @@ export function DataTable<TData extends { id: string }, TValue>({
                         ? Array.from({ length: 5 }).map((_, index) => <Skeleton key={index} className="h-24 w-full" />)
                         : table.getRowModel().rows.map((row) => {
                               const application = row.original as unknown as JobApplication;
-                              return <JobCard key={application.id} job={application} onEdit={() => {}} />;
+                              return <JobCard key={application.id} job={application} />;
                           })}
                 </div>
             )}

@@ -29,13 +29,13 @@ import { applicationsService } from '@/services/applications-service';
 import { useRouter } from 'next/navigation';
 import { DeleteApplicationDialog } from '@/components/applications-table/index';
 import Link from 'next/link';
+import { ApplicationDialog } from '@/components/applications/application-dialogs';
 
 interface JobCardProps {
     job: JobApplication;
-    onEdit?: () => void;
 }
 
-const JobCard = ({ job, onEdit }: JobCardProps) => {
+const JobCard = ({ job }: JobCardProps) => {
     const router = useRouter();
 
     const handleDelete = async () => {
@@ -136,13 +136,15 @@ const JobCard = ({ job, onEdit }: JobCardProps) => {
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="w-32">
-                                    <DropdownMenuItem
-                                        className="flex items-center gap-2 cursor-pointer"
-                                        onClick={onEdit}
-                                    >
-                                        <Pencil size={14} />
-                                        <span>Edit</span>
-                                    </DropdownMenuItem>
+                                    <ApplicationDialog initialData={job}>
+                                        <DropdownMenuItem
+                                            className="flex items-center gap-2 cursor-pointer"
+                                            onSelect={(e) => e.preventDefault()}
+                                        >
+                                            <Pencil size={14} />
+                                            <span>Edit</span>
+                                        </DropdownMenuItem>
+                                    </ApplicationDialog>
                                     <DeleteApplicationDialog job={job} onDelete={handleDelete}>
                                         <DropdownMenuItem
                                             className="flex items-center gap-2 cursor-pointer text-destructive focus:text-destructive"

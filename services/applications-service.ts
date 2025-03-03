@@ -102,6 +102,7 @@ export const applicationsService = {
                     interview_date: interviewDate?.toISOString().split('T')[0] || null,
                     source: values.source,
                     company_website: values.company_website || null,
+                    last_update: new Date().toISOString(),
                 })
                 .eq('id', id);
 

@@ -16,6 +16,7 @@ import { useState } from 'react';
 import { JobApplication } from '@/types/database';
 import { applicationsService } from '@/services/applications-service';
 import { DeleteApplicationDialog } from '@/components/applications-table/index';
+import { ApplicationDialog } from '@/components/applications/application-dialogs';
 
 interface DataTableRowActionsProps {
     row: Row<JobApplication>;
@@ -42,10 +43,12 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-                <DropdownMenuItem>
-                    <Pencil className="mr-2 h-4 w-4" />
-                    Edit
-                </DropdownMenuItem>
+                <ApplicationDialog initialData={row.original}>
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Edit
+                    </DropdownMenuItem>
+                </ApplicationDialog>
                 <DropdownMenuSeparator />
                 <DeleteApplicationDialog job={row.original} onDelete={handleDelete}>
                     <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
@@ -55,5 +58,13 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
                 </DeleteApplicationDialog>
             </DropdownMenuContent>
         </DropdownMenu>
+    );
+}
+
+export function CreateApplicationButton() {
+    return (
+        <ApplicationDialog>
+            <Button>Create Application</Button>
+        </ApplicationDialog>
     );
 }

@@ -34,12 +34,7 @@ export default function Home() {
                             Account
                         </a>
                     </li>
-                    <li className="mb-2">
-                        Go to applications page{' '}
-                        <a href="/applications" className="text-primary hover:underline">
-                            Tasks (demo table)
-                        </a>
-                    </li>
+
                     <li>
                         Go to home page{' '}
                         <a href="/" className="text-primary hover:underline">

@@ -96,3 +96,13 @@ body {
         @apply bg-background text-foreground;
     }
 }
+
+::selection {
+    background-color: #4ade80;
+    color: #000000;
+}
+
+::-moz-selection {
+    background-color: #4ade80;
+    color: #000000;
+}

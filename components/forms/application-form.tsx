@@ -35,6 +35,7 @@ import { Badge } from '@/components/ui/badge';
 import { useRouter } from 'next/navigation';
 import { applicationFormSchema, ApplicationFormValues } from '@/lib/validations/application';
 import { applicationsService } from '@/services/applications-service';
+import { JobApplication } from '@/types/database';
 
 export function ApplicationCreate() {
     const [open, setOpen] = React.useState(false);
@@ -82,27 +83,49 @@ const sourceOptions = [
     { value: 'Other', label: 'Other' },
 ];
 
-function ApplicationForm({ className, onSuccess }: { className?: string; onSuccess?: () => void }) {
+interface ApplicationFormProps {
+    initialData?: JobApplication;
+    className?: string;
+    onSuccess?: () => void;
+}
+
+function mapJobToFormValues(job: JobApplication): ApplicationFormValues {
+    return {
+        company_name: job.company_name,
+        position: job.position,
+        status: job.status,
+        application_date: new Date(job.application_date),
+        interview_date: job.interview_date ? new Date(job.interview_date) : null,
+        source: job.source as ApplicationFormValues['source'], // Type assertion for source
+        company_website: job.company_website || '',
+    };
+}
+
+function ApplicationForm({ initialData, className, onSuccess }: ApplicationFormProps) {
     const router = useRouter();
     const [isLoading, setIsLoading] = React.useState(false);
 
     const form = useForm<ApplicationFormValues>({
         resolver: zodResolver(applicationFormSchema),
-        defaultValues: {
-            company_name: '',
-            position: '',
-            status: 'pending',
-            application_date: new Date(),
-            interview_date: null,
-            source: 'LinkedIn',
-            company_website: '',
-        },
+        defaultValues: initialData
+            ? mapJobToFormValues(initialData)
+            : {
+                  company_name: '',
+                  position: '',
+                  status: 'pending',
+                  application_date: new Date(),
+                  interview_date: null,
+                  source: 'LinkedIn',
+                  company_website: '',
+              },
     });
 
     async function onSubmit(values: ApplicationFormValues) {
         setIsLoading(true);
         try {
-            const success = await applicationsService.createApplication(values);
+            const success = initialData
+                ? await applicationsService.updateApplication(initialData.id, values)
+                : await applicationsService.createApplication(values);
 
             if (success) {
                 form.reset();
@@ -319,7 +342,7 @@ function ApplicationForm({ className, onSuccess }: { className?: string; onSucce
                     </div>
 
                     <Button type="submit" className="w-full mb-2" disabled={isLoading}>
-                        {isLoading ? 'Submitting...' : 'Submit Application'}
+                        {isLoading ? 'Submitting...' : initialData ? 'Update Application' : 'Create Application'}
                     </Button>
                 </form>
             </Form>

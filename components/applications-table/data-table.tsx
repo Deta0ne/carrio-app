@@ -20,18 +20,29 @@ import { DataTablePagination, DataTableToolbar } from '@/components/applications
 import { useMediaQuery } from '@/hooks/use-media-query';
 import JobCard from '@/components/ApplicationCard';
 import { JobApplication } from '@/types/database';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface DataTableProps<TData extends { id: string }, TValue> {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
+    isLoading: boolean;
 }
 
-export function DataTable<TData extends { id: string }, TValue>({ columns, data }: DataTableProps<TData, TValue>) {
+export function DataTable<TData extends { id: string }, TValue>({
+    columns,
+    data,
+    isLoading,
+}: DataTableProps<TData, TValue>) {
+    const [isMounted, setIsMounted] = React.useState(false);
     const [rowSelection, setRowSelection] = React.useState({});
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const isDesktop = useMediaQuery('(min-width: 768px)');
+
+    React.useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     const table = useReactTable({
         data,
@@ -54,6 +65,48 @@ export function DataTable<TData extends { id: string }, TValue>({ columns, data 
         getFacetedRowModel: getFacetedRowModel(),
         getFacetedUniqueValues: getFacetedUniqueValues(),
     });
+
+    if (!isMounted) {
+        return (
+            <div className="space-y-4">
+                <div className="flex justify-between gap-2">
+                    <Skeleton className="h-8 w-96" />
+                    <Skeleton className="h-8 w-20" />
+                </div>
+                <div className="overflow-auto rounded-md border">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                {columns.map((column, index) => (
+                                    <TableHead key={`skeleton-header-${index}`} className="whitespace-nowrap">
+                                        <Skeleton className="h-4 w-full" />
+                                    </TableHead>
+                                ))}
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {Array.from({ length: 5 }).map((_, rowIndex) => (
+                                <TableRow key={`skeleton-row-${rowIndex}`}>
+                                    {columns.map((column, colIndex) => (
+                                        <TableCell
+                                            key={`skeleton-cell-${rowIndex}-${colIndex}`}
+                                            className="whitespace-nowrap"
+                                        >
+                                            <Skeleton className="h-4 w-full" />
+                                        </TableCell>
+                                    ))}
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+                <div className="flex justify-between gap-2">
+                    <Skeleton className="h-8 w-40" />
+                    <Skeleton className="h-8 w-96" />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-4">
@@ -85,7 +138,17 @@ export function DataTable<TData extends { id: string }, TValue>({ columns, data 
                                 ))}
                             </TableHeader>
                             <TableBody>
-                                {table.getRowModel().rows?.length ? (
+                                {isLoading ? (
+                                    Array.from({ length: 5 }).map((_, index) => (
+                                        <TableRow key={index}>
+                                            {columns.map((column) => (
+                                                <TableCell key={column.id} className="whitespace-nowrap">
+                                                    <Skeleton className="h-4 w-full" />
+                                                </TableCell>
+                                            ))}
+                                        </TableRow>
+                                    ))
+                                ) : table.getRowModel().rows?.length ? (
                                     table.getRowModel().rows.map((row) => (
                                         <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
                                             {row.getVisibleCells().map((cell) => (
@@ -109,10 +172,12 @@ export function DataTable<TData extends { id: string }, TValue>({ columns, data 
                 </>
             ) : (
                 <div className="grid grid-cols-1 gap-4">
-                    {table.getRowModel().rows.map((row) => {
-                        const application = row.original as unknown as JobApplication;
-                        return <JobCard key={application.id} job={application} onEdit={() => {}} />;
-                    })}
+                    {isLoading
+                        ? Array.from({ length: 5 }).map((_, index) => <Skeleton key={index} className="h-24 w-full" />)
+                        : table.getRowModel().rows.map((row) => {
+                              const application = row.original as unknown as JobApplication;
+                              return <JobCard key={application.id} job={application} onEdit={() => {}} />;
+                          })}
                 </div>
             )}
         </div>

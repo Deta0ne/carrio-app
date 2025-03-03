@@ -1,8 +1,10 @@
+import { Suspense } from 'react';
 import { createClient } from '@/utils/supabase/server';
 import { Metadata } from 'next';
 import { columns, DataTable } from '@/components/applications-table/index';
 import { ApplicationCreate } from '@/components/forms/application-form';
 import { redirect } from 'next/navigation';
+import Loading from './loading';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
@@ -12,8 +14,6 @@ export const metadata: Metadata = {
 
 export default async function ApplicationsPage() {
     const supabase = await createClient();
-
-    // Get user
     const {
         data: { user },
     } = await supabase.auth.getUser();
@@ -22,7 +22,6 @@ export default async function ApplicationsPage() {
         redirect('/login');
     }
 
-    // Get applications
     const { data: applications } = await supabase
         .from('job_applications')
         .select('*')
@@ -38,7 +37,9 @@ export default async function ApplicationsPage() {
                 </div>
                 <ApplicationCreate />
             </div>
-            <DataTable data={applications || []} columns={columns} />
+            <Suspense fallback={<Loading />}>
+                <DataTable data={applications || []} columns={columns} />
+            </Suspense>
         </div>
     );
 }

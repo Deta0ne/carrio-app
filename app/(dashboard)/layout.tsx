@@ -4,6 +4,7 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { createClient } from '@/utils/supabase/server';
 import { Header } from '@/components/layout/header';
 import { Toaster } from 'sonner';
+import { ErrorBoundary } from '@/components/error-boundary';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
     const supabase = await createClient();
@@ -35,7 +36,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
             <SidebarInset>
                 <Header />
                 <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-                    <AppProvider>{children}</AppProvider>
+                    <ErrorBoundary>
+                        <AppProvider>{children}</AppProvider>
+                    </ErrorBoundary>
                 </div>
             </SidebarInset>
             <Toaster richColors position="top-right" />

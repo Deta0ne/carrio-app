@@ -13,33 +13,40 @@ export const metadata: Metadata = {
 };
 
 export default async function ApplicationsPage() {
-    const supabase = await createClient();
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
+    try {
+        const supabase = await createClient();
 
-    if (!user) {
-        redirect('/login');
-    }
+        const {
+            data: { session },
+        } = await supabase.auth.getSession();
 
-    const { data: applications } = await supabase
-        .from('job_applications')
-        .select('*')
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false });
+        if (!session) {
+            redirect('/login');
+        }
 
-    return (
-        <div className="h-full flex-1 flex-col space-y-8 md:p-8">
-            <div className="flex items-center justify-between space-y-2">
-                <div>
-                    <h2 className="text-2xl font-bold tracking-tight">Welcome back!</h2>
-                    <p className="text-muted-foreground">Here&apos;s a list of your job applications</p>
+        const { data: applications } = await supabase
+            .from('job_applications')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        return (
+            <div className="h-full flex-1 flex-col space-y-8 md:p-8">
+                <div className="flex items-center justify-between space-y-2">
+                    <div>
+                        <h2 className="text-2xl font-bold tracking-tight">Welcome back!</h2>
+                        <p className="text-muted-foreground">Here&apos;s a list of your job applications</p>
+                    </div>
+                    <ApplicationCreate />
                 </div>
-                <ApplicationCreate />
+                <Suspense fallback={<Loading />}>
+                    <DataTable data={applications || []} columns={columns} />
+                </Suspense>
             </div>
-            <Suspense fallback={<Loading />}>
-                <DataTable data={applications || []} columns={columns} />
-            </Suspense>
-        </div>
-    );
+        );
+    } catch (error) {
+        if (error instanceof Error && error.message.includes('auth')) {
+            redirect('/login');
+        }
+        throw error;
+    }
 }

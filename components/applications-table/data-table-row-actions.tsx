@@ -1,6 +1,6 @@
 'use client';
 
-import { MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal, Eye } from 'lucide-react';
 import { Row } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
 import {
@@ -43,6 +43,11 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => router.push('/home/detail')}>
+                    <Eye className="mr-2 h-4 w-4" />
+                    View Details
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <ApplicationDialog initialData={row.original}>
                     <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                         <Pencil className="mr-2 h-4 w-4" />

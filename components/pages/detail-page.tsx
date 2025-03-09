@@ -9,6 +9,8 @@ import { Input } from '@/components/ui/input';
 import { StatusIndicator } from '../applications-detail/status-indicator';
 import { NoteItem } from '../applications-detail/note-item';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator as SeparatorRadix } from '@radix-ui/react-dropdown-menu';
+import { Separator } from '@/components/ui/separator';
 
 // Mock data for the application
 const initialApplication = {
@@ -83,7 +85,7 @@ export function DetailPageComponent() {
     };
 
     return (
-        <div className=" shadow-sm rounded-lg overflow-hidden">
+        <div className=" shadow-sm rounded-lg overflow-hidden ">
             {/* Top Section - Summary Information */}
             <div className="p-8 border-b border-gray-200 dark:border-gray-700">
                 <div className="flex items-center justify-between mb-6">
@@ -108,14 +110,24 @@ export function DetailPageComponent() {
 
             {/* Middle Section - Interview and Files */}
             <div className="p-8 border-b border-gray-200 dark:border-gray-700">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className=" sm:flex gap-8">
                     {/* Interview Information */}
-                    <div>
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center">
-                            <CalendarIcon className="mr-2 h-5 w-5 text-gray-400 dark:text-gray-500" />
-                            Interview
-                        </h3>
-                        <div className="  rounded-lg p-4">
+                    <div className="flex-1">
+                        <div className="flex justify-between">
+                            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center">
+                                <CalendarIcon className="mr-2 h-5 w-5 text-gray-400 dark:text-gray-500" />
+                                Interview
+                            </h3>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleSetReminder}
+                                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                            >
+                                Set Reminder
+                            </Button>
+                        </div>
+                        <div className="rounded-lg p-4">
                             <div className="flex items-center justify-between mb-2">
                                 <div className="text-gray-800 dark:text-gray-200 font-medium">
                                     {format(application.interview.date, 'MMMM d, yyyy')}
@@ -123,14 +135,6 @@ export function DetailPageComponent() {
                                         {application.interview.time}
                                     </span>
                                 </div>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={handleSetReminder}
-                                    className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
-                                >
-                                    Set Reminder
-                                </Button>
                             </div>
                             <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
                                 <span className="font-medium">Type:</span> {application.interview.type}
@@ -141,15 +145,27 @@ export function DetailPageComponent() {
                         </div>
                     </div>
 
+                    {/* Separator */}
+                    <Separator orientation="vertical" className="h-auto" />
+
                     {/* Files */}
-                    <div>
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center">
-                            <Paperclip className="mr-2 h-5 w-5 text-gray-400 dark:text-gray-500" />
-                            Documents
-                        </h3>
+                    <div className="flex-1">
+                        <div className="flex justify-between">
+                            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center">
+                                <Paperclip className="mr-2 h-5 w-5 text-gray-400 dark:text-gray-500" />
+                                Documents
+                            </h3>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                            >
+                                Add Document
+                            </Button>
+                        </div>
                         <div className="space-y-2">
                             {application.files.map((file, index) => (
-                                <div key={index} className="flex items-center p-3   rounded-lg">
+                                <div key={index} className="flex items-center p-3 rounded-lg">
                                     <div className="w-8 h-8 bg-gray-200 dark:bg-gray-600 rounded-md flex items-center justify-center text-gray-600 dark:text-gray-300 font-medium mr-3">
                                         {file.type === 'CV' ? 'CV' : 'CL'}
                                     </div>

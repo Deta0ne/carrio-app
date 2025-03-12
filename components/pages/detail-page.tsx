@@ -9,8 +9,7 @@ import { Input } from '@/components/ui/input';
 import { StatusIndicator } from '../applications-detail/status-indicator';
 import { NoteItem } from '../applications-detail/note-item';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Separator as SeparatorRadix } from '@radix-ui/react-dropdown-menu';
-import { Separator } from '@/components/ui/separator';
+import { Card } from '@/components/ui/card';
 
 // Mock data for the application
 const initialApplication = {
@@ -75,7 +74,6 @@ export function DetailPageComponent() {
     };
 
     const handleSetReminder = () => {
-        // In a real app, this would integrate with a calendar or notification system
         alert(
             'Reminder set for interview on ' +
                 format(application.interview.date, 'MMMM d, yyyy') +
@@ -85,92 +83,98 @@ export function DetailPageComponent() {
     };
 
     return (
-        <div className=" shadow-sm rounded-lg overflow-hidden ">
+        <Card className="max-w-5xl mx-auto bg-white dark:bg-gray-900 shadow-lg">
             {/* Top Section - Summary Information */}
-            <div className="p-8 border-b border-gray-200 dark:border-gray-700">
+            <div className="p-8 border-b border-gray-100 dark:border-gray-800">
                 <div className="flex items-center justify-between mb-6">
                     <div>
-                        <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-100">
+                        <h2 className="text-3xl font-semibold text-gray-900 dark:text-gray-50">
                             {application.company}
                         </h2>
-                        <p className="text-gray-500 dark:text-gray-400 mt-1">{application.position}</p>
+                        <p className="text-lg text-gray-600 dark:text-gray-400 mt-2">{application.position}</p>
                     </div>
                     <StatusIndicator status={application.status} />
                 </div>
-                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 space-x-6">
-                    <div>
-                        <span className="font-medium">Source:</span> {application.source}
+                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 space-x-8 mt-4">
+                    <div className="flex items-center">
+                        <span className="font-medium mr-2">Source:</span>
+                        <span className="bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full">
+                            {application.source}
+                        </span>
                     </div>
-                    <div>
-                        <span className="font-medium">Applied:</span>{' '}
-                        {format(application.applicationDate, 'MMM d, yyyy')}
+                    <div className="flex items-center">
+                        <span className="font-medium mr-2">Applied:</span>
+                        <span className="bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full">
+                            {format(application.applicationDate, 'MMM d, yyyy')}
+                        </span>
                     </div>
                 </div>
             </div>
 
             {/* Middle Section - Interview and Files */}
-            <div className="p-8 border-b border-gray-200 dark:border-gray-700">
-                <div className=" sm:flex gap-8">
-                    {/* Interview Information */}
-                    <div className="flex-1">
-                        <div className="flex justify-between">
-                            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center">
-                                <CalendarIcon className="mr-2 h-5 w-5 text-gray-400 dark:text-gray-500" />
+            <div className="p-8 border-b border-gray-100 dark:border-gray-800">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <Card className="p-6 bg-gray-50 dark:bg-gray-800/50 border-none">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-50 flex items-center">
+                                <CalendarIcon className="mr-2 h-5 w-5 text-blue-500" />
                                 Interview
                             </h3>
                             <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={handleSetReminder}
-                                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                                className="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                             >
                                 Set Reminder
                             </Button>
                         </div>
-                        <div className="rounded-lg p-4">
-                            <div className="flex items-center justify-between mb-2">
-                                <div className="text-gray-800 dark:text-gray-200 font-medium">
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <div className="text-gray-900 dark:text-gray-100 font-medium">
                                     {format(application.interview.date, 'MMMM d, yyyy')}
                                     <span className="text-gray-500 dark:text-gray-400 ml-2">
                                         {application.interview.time}
                                     </span>
                                 </div>
                             </div>
-                            <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                                <span className="font-medium">Type:</span> {application.interview.type}
-                            </p>
-                            <p className="text-sm text-gray-600 dark:text-gray-300">
-                                <span className="font-medium">Notes:</span> {application.interview.notes}
-                            </p>
+                            <div className="text-sm space-y-2">
+                                <p className="text-gray-600 dark:text-gray-300">
+                                    <span className="font-medium">Type:</span> {application.interview.type}
+                                </p>
+                                <p className="text-gray-600 dark:text-gray-300">
+                                    <span className="font-medium">Notes:</span> {application.interview.notes}
+                                </p>
+                            </div>
                         </div>
-                    </div>
-
-                    {/* Separator */}
-                    <Separator orientation="vertical" className="h-auto" />
+                    </Card>
 
                     {/* Files */}
-                    <div className="flex-1">
-                        <div className="flex justify-between">
-                            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center">
-                                <Paperclip className="mr-2 h-5 w-5 text-gray-400 dark:text-gray-500" />
+                    <Card className="p-6 bg-gray-50 dark:bg-gray-800/50 border-none">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-50 flex items-center">
+                                <Paperclip className="mr-2 h-5 w-5 text-purple-500" />
                                 Documents
                             </h3>
                             <Button
                                 variant="outline"
                                 size="sm"
-                                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                                className="text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20"
                             >
                                 Add Document
                             </Button>
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-3">
                             {application.files.map((file, index) => (
-                                <div key={index} className="flex items-center p-3 rounded-lg">
-                                    <div className="w-8 h-8 bg-gray-200 dark:bg-gray-600 rounded-md flex items-center justify-center text-gray-600 dark:text-gray-300 font-medium mr-3">
+                                <div
+                                    key={index}
+                                    className="flex items-center p-3 rounded-lg hover:bg-white dark:hover:bg-gray-800 transition-colors"
+                                >
+                                    <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center text-purple-600 dark:text-purple-400 font-medium mr-3">
                                         {file.type === 'CV' ? 'CV' : 'CL'}
                                     </div>
                                     <div>
-                                        <div className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                             {file.name}
                                         </div>
                                         <div className="text-xs text-gray-500 dark:text-gray-400">{file.type}</div>
@@ -178,14 +182,14 @@ export function DetailPageComponent() {
                                 </div>
                             ))}
                         </div>
-                    </div>
+                    </Card>
                 </div>
             </div>
 
             {/* Notes Section */}
             <div className="p-8">
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4">Notes</h3>
-                <div className="space-y-4 mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-50 mb-6">Notes</h3>
+                <div className="grid gap-4 mb-6">
                     {application.notes.map((note) => (
                         <NoteItem key={note.id} note={note} onDelete={() => handleDeleteNote(note.id)} />
                     ))}
@@ -197,19 +201,19 @@ export function DetailPageComponent() {
                         onChange={(e) => setNewNote(e.target.value)}
                         className="flex-grow"
                     />
-                    <Button onClick={handleAddNote}>
+                    <Button onClick={handleAddNote} className="bg-amber-500 hover:bg-amber-600 text-white">
                         <Plus className="h-4 w-4 mr-2" />
-                        Add
+                        Add Note
                     </Button>
                 </div>
             </div>
 
             {/* Bottom Section - User Actions */}
-            <div className=" px-8 py-4 flex items-center justify-between">
+            <div className="px-8 py-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Status:</span>
                     <Select value={application.status} onValueChange={handleStatusChange}>
-                        <SelectTrigger className="w-[140px]">
+                        <SelectTrigger className="w-[180px]">
                             <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                         <SelectContent>
@@ -220,11 +224,11 @@ export function DetailPageComponent() {
                         </SelectContent>
                     </Select>
                 </div>
-                <Button variant="destructive">
+                <Button variant="destructive" className="hover:bg-red-600">
                     <Trash2 className="h-4 w-4 mr-2" />
                     Delete Application
                 </Button>
             </div>
-        </div>
+        </Card>
     );
 }

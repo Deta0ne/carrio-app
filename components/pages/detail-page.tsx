@@ -17,7 +17,7 @@ interface Application {
     user_id: string;
     company_name: string;
     position: string;
-    status: 'pending' | 'interviewing' | 'offered' | 'accepted' | 'rejected';
+    status: 'pending' | 'interviewing' | 'offered' | 'planned' | 'rejected';
     application_date: string;
     last_update: string;
     interview_date: string | null;
@@ -258,7 +258,7 @@ export function DetailPageComponent({ application }: { application: Application 
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Status:</span>
                     <Select
                         value={currentStatus}
-                        onValueChange={(value: 'pending' | 'interviewing' | 'offered' | 'accepted' | 'rejected') =>
+                        onValueChange={(value: 'pending' | 'interviewing' | 'offered' | 'planned' | 'rejected') =>
                             setCurrentStatus(value)
                         }
                     >
@@ -269,7 +269,7 @@ export function DetailPageComponent({ application }: { application: Application 
                             <SelectItem value="pending">Pending</SelectItem>
                             <SelectItem value="interviewing">Interview</SelectItem>
                             <SelectItem value="offered">Offer</SelectItem>
-                            <SelectItem value="accepted">Accepted</SelectItem>
+                            <SelectItem value="planned">Planned</SelectItem>
                             <SelectItem value="rejected">Rejected</SelectItem>
                         </SelectContent>
                     </Select>

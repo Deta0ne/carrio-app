@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { CalendarIcon, Paperclip, Plus, Trash2 } from 'lucide-react';
+import { CalendarIcon, Paperclip, Plus, Trash2, Globe, Clock, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Pencil } from 'lucide-react';
@@ -96,31 +96,44 @@ export function DetailPageComponent({ application }: { application: Application 
                     </div>
                     <StatusIndicator status={currentStatus} />
                 </div>
-                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 space-x-8 mt-4">
-                    <div className="flex items-center">
-                        <span className="font-medium mr-2">Source:</span>
-                        <span className="bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full">
-                            {application.source}
-                        </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mt-4">
+                    <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-800/70 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 transition-all hover:shadow-md">
+                        <div className="flex items-center mb-2">
+                            <Globe className="h-4 w-4 text-blue-500 mr-2" />
+                            <div className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
+                                Source
+                            </div>
+                        </div>
+                        <div className="font-medium text-gray-800 dark:text-gray-200">{application.source}</div>
                     </div>
-                    <div className="flex items-center">
-                        <span className="font-medium mr-2">Applied:</span>
-                        <span className="bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full">
+                    <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-800/70 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 transition-all hover:shadow-md">
+                        <div className="flex items-center mb-2">
+                            <CalendarIcon className="h-4 w-4 text-green-500 mr-2" />
+                            <div className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
+                                Applied
+                            </div>
+                        </div>
+                        <div className="font-medium text-gray-800 dark:text-gray-200">
                             {format(new Date(application.application_date), 'MMM d, yyyy')}
-                        </span>
+                        </div>
                     </div>
-                    <div className="flex items-center">
-                        <span className="font-medium mr-2">Last Update:</span>
-                        <span className="bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full">
+                    <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-800/70 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 transition-all hover:shadow-md">
+                        <div className="flex items-center mb-2">
+                            <RefreshCw className="h-4 w-4 text-purple-500 mr-2" />
+                            <div className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium">
+                                Last Update
+                            </div>
+                        </div>
+                        <div className="font-medium text-gray-800 dark:text-gray-200">
                             {format(new Date(application.last_update), 'MMM d, yyyy')}
-                        </span>
+                        </div>
                     </div>
                 </div>
             </div>
 
             {/* Middle Section - Interview and Files */}
             <div className="p-8 border-b border-gray-100 dark:border-gray-800">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <Card className="p-6 bg-gray-50 dark:bg-gray-800/50 border-none">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-50 flex items-center">
@@ -240,7 +253,7 @@ export function DetailPageComponent({ application }: { application: Application 
             </div>
 
             {/* Bottom Section - User Actions */}
-            <div className="px-8 py-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
+            <div className="px-8 py-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between rounded-bl-lg rounded-br-lg">
                 <div className="flex items-center space-x-2">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Status:</span>
                     <Select

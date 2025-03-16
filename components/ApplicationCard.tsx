@@ -15,6 +15,7 @@ import {
     Clock,
     Link2,
     ArrowUpRight,
+    Eye,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -22,6 +23,7 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
+    DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import { JobApplication } from '@/types/database';
 import { format } from 'date-fns';
@@ -30,6 +32,7 @@ import { useRouter } from 'next/navigation';
 import { DeleteApplicationDialog } from '@/components/applications-table/index';
 import Link from 'next/link';
 import { ApplicationDialog } from '@/components/applications/application-dialogs';
+import { generateSlug } from '@/utils/slugify';
 
 interface JobCardProps {
     job: JobApplication;
@@ -45,6 +48,14 @@ const JobCard = ({ job }: JobCardProps) => {
         }
     };
 
+    // Generate slug for the application
+    const slug = generateSlug(job.position, job.company_name, job.id);
+
+    // Navigate to detail page
+    const navigateToDetail = () => {
+        router.push(`/home/${slug}?id=${job.id}`);
+    };
+
     const statusIcons = {
         interview_stage: Users,
         rejected: XCircle,
@@ -55,7 +66,7 @@ const JobCard = ({ job }: JobCardProps) => {
 
     const StatusIcon = statusIcons[job.status as keyof typeof statusIcons] || Briefcase;
     return (
-        <Card className="h-full flex flex-col border-border dark:border-gray-800 border-gray-200 relative overflow-hidden bg-gradient-to-t dark:from-black dark:via-[#101725] dark:to-primary/10 from-gray-100 via-gray-50 to-primary/5">
+        <Card className="h-full flex flex-col border-border dark:border-gray-800 border-gray-200 relative overflow-hidden bg-gradient-to-t dark:from-black dark:via-[#101725] dark:to-primary/10 from-gray-100 via-gray-50 to-primary/5 transition-all hover:shadow-md">
             {/* HEADER */}
             <CardHeader className="p-6 pb-2">
                 <div className="flex items-start gap-4">
@@ -121,9 +132,10 @@ const JobCard = ({ job }: JobCardProps) => {
                             <Button
                                 variant="outline"
                                 size="icon"
-                                className="h-7 w-7 border-border text-muted-foreground hover:text-primary hover:border-primary"
+                                className={`h-7 w-7 border-border $`}
+                                onClick={navigateToDetail}
                             >
-                                <ArrowUpRight size={14} />
+                                <Eye size={14} />
                             </Button>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
@@ -135,7 +147,20 @@ const JobCard = ({ job }: JobCardProps) => {
                                         <MoreVertical size={14} />
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-32">
+                                <DropdownMenuContent align="end" className="w-36">
+                                    <DropdownMenuItem
+                                        className={`flex items-center gap-2 ${
+                                            job.company_website ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'
+                                        }`}
+                                        onClick={() =>
+                                            job.company_website && window.open(job.company_website, '_blank')
+                                        }
+                                        disabled={!job.company_website}
+                                    >
+                                        <ExternalLink size={14} />
+                                        <span>Company Site</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
                                     <ApplicationDialog initialData={job}>
                                         <DropdownMenuItem
                                             className="flex items-center gap-2 cursor-pointer"

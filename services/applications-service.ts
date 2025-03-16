@@ -115,5 +115,39 @@ export const applicationsService = {
             toast.error('Failed to update application');
             return false;
         }
+    },
+
+    async updateApplicationStatus(id: string, status: string) {
+        try {
+            
+            const { data: { user }, error: userError } = await supabase.auth.getUser();
+            if (userError) {
+                console.error('Authentication error:', userError);
+                return false;
+            }
+            if (!user) {
+                console.error('No authenticated user found');
+                return false;
+            }
+            
+            const { error } = await supabase
+                .from('job_applications')
+                .update({
+                    status: status,
+                    last_update: new Date().toISOString(),
+                })
+                .eq('id', id)
+                .eq('user_id', user.id);
+            
+            if (error) {
+                console.error('Error updating status in Supabase:', error);
+                throw error;
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('Error updating application status:', error);
+            return false;
+        }
     }
 };

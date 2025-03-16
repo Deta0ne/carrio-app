@@ -149,9 +149,9 @@ function ApplicationForm({ initialData, className, onSuccess }: ApplicationFormP
                                     <FormLabel>Company Name</FormLabel>
                                     <FormControl>
                                         <div className="relative">
-                                            <Input placeholder="Enter company name" maxLength={100} {...field} />
+                                            <Input placeholder="Enter company name" maxLength={35} {...field} />
                                             <span className="absolute right-2 top-2 text-xs text-muted-foreground">
-                                                {field.value.length}/100
+                                                {field.value.length}/35
                                             </span>
                                         </div>
                                     </FormControl>
@@ -167,9 +167,9 @@ function ApplicationForm({ initialData, className, onSuccess }: ApplicationFormP
                                     <FormLabel>Position</FormLabel>
                                     <FormControl>
                                         <div className="relative">
-                                            <Input placeholder="Enter position title" maxLength={150} {...field} />
+                                            <Input placeholder="Enter position title" maxLength={35} {...field} />
                                             <span className="absolute right-2 top-2 text-xs text-muted-foreground">
-                                                {field.value.length}/150
+                                                {field.value.length}/35
                                             </span>
                                         </div>
                                     </FormControl>

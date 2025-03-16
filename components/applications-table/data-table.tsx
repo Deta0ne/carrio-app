@@ -62,7 +62,6 @@ export function DataTable<TData extends { id: string }, TValue>({ columns, data 
     if (!isMounted) {
         return <Loading />;
     }
-    console.log('Test');
     return (
         <div className="space-y-4">
             <DataTableToolbar table={table} />

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { CalendarIcon, Paperclip, Plus, Trash2, Globe, Clock, RefreshCw } from 'lucide-react';
+import { CalendarIcon, Paperclip, Plus, Trash2, Globe, Clock, RefreshCw, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Pencil } from 'lucide-react';
@@ -83,9 +83,12 @@ export function DetailPageComponent({ application }: { application: Application 
                                 href={application.company_website}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-block text-3xl font-semibold text-gray-900 dark:text-gray-50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                className="inline-flex items-center text-3xl font-semibold text-gray-900 dark:text-gray-50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors group"
+                                aria-label={`Visit ${application.company_name} website`}
                             >
                                 {application.company_name}
+                                <ExternalLink className="ml-2 h-4 w-4 mb-3 text-blue-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                                <span className="sr-only">Opens in a new tab</span>
                             </a>
                         ) : (
                             <h2 className="text-3xl font-semibold text-gray-900 dark:text-gray-50">

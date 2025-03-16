@@ -44,7 +44,7 @@ export const columns: ColumnDef<JobApplication>[] = [
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <span className="font-medium">{truncateText(value, 30)}</span>
+                            <span className="font-medium truncate block max-w-[200px]">{truncateText(value, 30)}</span>
                         </TooltipTrigger>
                         {value.length > 30 && (
                             <TooltipContent>

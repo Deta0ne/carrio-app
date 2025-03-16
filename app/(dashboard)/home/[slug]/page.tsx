@@ -4,9 +4,12 @@ import { notFound, redirect } from 'next/navigation';
 import { Metadata } from 'next';
 
 interface PageProps {
-    params: {
+    params: Promise<{
         slug: string;
-    };
+    }>;
+    searchParams: Promise<{
+        id?: string;
+    }>;
 }
 
 function normalizeText(text: string): string {
@@ -19,8 +22,19 @@ function normalizeText(text: string): string {
         .trim();
 }
 
-async function findApplication(slug: string, userId: string) {
+async function findApplication(slug: string, userId: string, directId?: string) {
     const supabase = await createClient();
+
+    if (directId) {
+        const { data } = await supabase
+            .from('job_applications')
+            .select('*')
+            .eq('id', directId)
+            .eq('user_id', userId)
+            .single();
+        if (data) return data;
+    }
+
     const { data: userApplications } = await supabase.from('job_applications').select('*').eq('user_id', userId);
 
     if (!userApplications?.length) return null;
@@ -120,11 +134,13 @@ async function getUserOrRedirect() {
 
 export async function generateMetadata(props: PageProps): Promise<Metadata> {
     const params = await props.params;
+    const searchParams = await props.searchParams;
     const slug = params.slug;
+    const id = searchParams.id;
 
     try {
         const user = await getUserOrRedirect();
-        const application = await findApplication(slug, user.id);
+        const application = await findApplication(slug, user.id, id);
 
         if (application) {
             return {
@@ -139,10 +155,12 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
 
 export default async function ApplicationDetailPage(props: PageProps) {
     const params = await props.params;
+    const searchParams = await props.searchParams;
     const slug = params.slug;
+    const id = searchParams.id;
 
     const user = await getUserOrRedirect();
-    const application = await findApplication(slug, user.id);
+    const application = await findApplication(slug, user.id, id);
 
     if (!application) notFound();
 

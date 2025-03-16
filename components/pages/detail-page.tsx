@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { CalendarIcon, Paperclip, Plus, Trash2, Globe, Clock, RefreshCw, ExternalLink } from 'lucide-react';
+import { CalendarIcon, Paperclip, Plus, Trash2, Globe, Clock, RefreshCw, ExternalLink, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { tr } from 'date-fns/locale';
 import { Pencil } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,8 +47,36 @@ interface Note {
     date: Date;
 }
 
+type DatabaseStatus = 'pending' | 'interview_stage' | 'offer_received' | 'planned' | 'rejected';
+
+type UIStatus = 'pending' | 'interviewing' | 'offered' | 'planned' | 'rejected';
+
+const mapUIStatusToDBStatus = (uiStatus: UIStatus): DatabaseStatus => {
+    switch (uiStatus) {
+        case 'offered':
+            return 'offer_received';
+        case 'interviewing':
+            return 'interview_stage';
+        default:
+            return uiStatus as DatabaseStatus;
+    }
+};
+
+const mapDBStatusToUIStatus = (dbStatus: string): UIStatus => {
+    switch (dbStatus) {
+        case 'offer_received':
+            return 'offered';
+        case 'interview_stage':
+            return 'interviewing';
+        default:
+            return dbStatus as UIStatus;
+    }
+};
+
 export function DetailPageComponent({ application }: { application: Application }) {
-    const [currentStatus, setCurrentStatus] = useState(application.status);
+    const initialStatus = mapDBStatusToUIStatus(application.status);
+    const [currentStatus, setCurrentStatus] = useState<UIStatus>(initialStatus);
+    const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
     const [newNote, setNewNote] = useState('');
     const router = useRouter();
     const staticNotes: Note[] = [
@@ -82,6 +111,31 @@ export function DetailPageComponent({ application }: { application: Application 
             router.push('/home');
         } catch (error) {
             console.error('Error deleting application:', error);
+        }
+    };
+
+    const handleStatusChange = async (value: UIStatus) => {
+        try {
+            setIsUpdatingStatus(true);
+
+            const dbStatus = mapUIStatusToDBStatus(value);
+
+            setCurrentStatus(value);
+
+            const result = await applicationsService.updateApplicationStatus(application.id, dbStatus);
+
+            if (!result) {
+                setCurrentStatus(initialStatus);
+                toast.error('Failed to update status');
+            } else {
+                toast.success('Status updated successfully');
+            }
+        } catch (error) {
+            console.error('Error updating status:', error);
+            setCurrentStatus(initialStatus);
+            toast.error('Failed to update status');
+        } finally {
+            setIsUpdatingStatus(false);
         }
     };
 
@@ -272,23 +326,21 @@ export function DetailPageComponent({ application }: { application: Application 
             <div className="px-8 py-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between rounded-bl-lg rounded-br-lg">
                 <div className="flex items-center space-x-2">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Status:</span>
-                    <Select
-                        value={currentStatus}
-                        onValueChange={(value: 'pending' | 'interviewing' | 'offered' | 'planned' | 'rejected') =>
-                            setCurrentStatus(value)
-                        }
-                    >
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="pending">Pending</SelectItem>
-                            <SelectItem value="interviewing">Interview</SelectItem>
-                            <SelectItem value="offered">Offer</SelectItem>
-                            <SelectItem value="planned">Planned</SelectItem>
-                            <SelectItem value="rejected">Rejected</SelectItem>
-                        </SelectContent>
-                    </Select>
+                    <div className="relative">
+                        <Select value={currentStatus} onValueChange={handleStatusChange} disabled={isUpdatingStatus}>
+                            <SelectTrigger className={`w-[180px] ${isUpdatingStatus ? 'opacity-80' : ''}`}>
+                                <SelectValue placeholder="Select status" />
+                                {isUpdatingStatus && <Loader2 className="h-4 w-4 ml-2 animate-spin text-gray-500" />}
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="pending">Pending</SelectItem>
+                                <SelectItem value="interviewing">Interview</SelectItem>
+                                <SelectItem value="offered">Offer</SelectItem>
+                                <SelectItem value="planned">Planned</SelectItem>
+                                <SelectItem value="rejected">Rejected</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
                 <DeleteApplicationDialog
                     job={application as unknown as JobApplication}

@@ -11,6 +11,10 @@ import { Input } from '@/components/ui/input';
 import { StatusIndicator } from '../applications-detail/status-indicator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card } from '@/components/ui/card';
+import { applicationsService } from '@/services/applications-service';
+import { DeleteApplicationDialog } from '@/components/applications-table/delete-application-dialog';
+import { useRouter } from 'next/navigation';
+import { JobApplication } from '@/types/database';
 
 interface Application {
     id: string;
@@ -45,7 +49,7 @@ interface Note {
 export function DetailPageComponent({ application }: { application: Application }) {
     const [currentStatus, setCurrentStatus] = useState(application.status);
     const [newNote, setNewNote] = useState('');
-
+    const router = useRouter();
     const staticNotes: Note[] = [
         {
             id: '1',
@@ -70,6 +74,15 @@ export function DetailPageComponent({ application }: { application: Application 
     const handleAddNote = () => {
         if (!newNote.trim()) return;
         setNewNote('');
+    };
+
+    const handleDeleteApplication = async () => {
+        try {
+            await applicationsService.deleteApplication(application.id);
+            router.push('/home');
+        } catch (error) {
+            console.error('Error deleting application:', error);
+        }
     };
 
     return (
@@ -277,10 +290,15 @@ export function DetailPageComponent({ application }: { application: Application 
                         </SelectContent>
                     </Select>
                 </div>
-                <Button variant="destructive" className="hover:bg-red-600">
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete Application
-                </Button>
+                <DeleteApplicationDialog
+                    job={application as unknown as JobApplication}
+                    onDelete={handleDeleteApplication}
+                >
+                    <Button variant="destructive" className="hover:bg-red-600">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete Application
+                    </Button>
+                </DeleteApplicationDialog>
             </div>
         </Card>
     );

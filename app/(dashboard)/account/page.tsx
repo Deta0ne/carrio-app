@@ -1,8 +1,9 @@
 import AccountForm from '@/components/forms/account-form';
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { User, Briefcase, Settings, FileText } from 'lucide-react';
+import { ProfileTabsClient } from '@/components/profile/profile-tabs-client';
 
 export default async function Account() {
     const supabase = await createClient();
@@ -22,9 +23,9 @@ export default async function Account() {
     return (
         <main className="min-h-screen bg-background p-4 md:p-8">
             <div className="mx-auto max-w-4xl">
-                <h1 className="mb-6 text-3xl font-bold tracking-tight">My Profile</h1>
+                <h1 className="mb-6 text-3xl font-bold tracking-tight">Your Profile</h1>
 
-                <Tabs defaultValue="profile" className="w-full">
+                <ProfileTabsClient defaultValue="profile">
                     <div className="flex flex-col md:flex-row gap-6">
                         <div className="md:w-64 flex-shrink-0">
                             <TabsList className="flex flex-col h-auto p-1 rounded-lg border bg-dark text-card-foreground shadow-sm w-full sticky top-4 space-y-1">
@@ -103,7 +104,7 @@ export default async function Account() {
                             </TabsContent>
                         </div>
                     </div>
-                </Tabs>
+                </ProfileTabsClient>
             </div>
         </main>
     );

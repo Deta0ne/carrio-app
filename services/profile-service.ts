@@ -9,6 +9,8 @@ export interface Profile {
     experience: string;
     updated_at: string;
     avatar_url: string;
+    username?: string;
+    bio?: string;
 }
 
 export const profileService = {
@@ -23,7 +25,9 @@ export const profileService = {
                 surname,
                 job_title,
                 experience,
-                avatar_url
+                avatar_url,
+                username,
+                bio 
             `)
             .eq('id', userId)
             .single();
@@ -45,5 +49,25 @@ export const profileService = {
         });
 
         if (error) throw error;
+    },
+
+    async uploadAvatar(userId: string, file: File, filePath: string) {
+        const supabase = createClient();
+
+        const { data, error } = await supabase.storage
+            .from('avatars')
+            .upload(filePath, file, {
+                upsert: true,
+            });
+
+        if (error) {
+            throw error;
+        }
+
+        const { data: urlData } = supabase.storage
+            .from('avatars')
+            .getPublicUrl(filePath);
+
+        return urlData.publicUrl;
     }
 }; 

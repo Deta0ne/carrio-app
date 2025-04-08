@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { profileService } from '@/services/profile-service';
 import { useUserStore } from '@/providers/store-provider';
 import Avatar from './avatar';
-
+import { useRouter } from 'next/navigation';
 export default function AccountForm({ user }: { user: User | null }) {
     const [loading, setLoading] = useState(true);
     const [email, setEmail] = useState<string | null>(null);
@@ -18,7 +18,7 @@ export default function AccountForm({ user }: { user: User | null }) {
     const [jobTitle, setJobTitle] = useState<string | null>(null);
     const [experience, setExperience] = useState<string | null>(null);
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-
+    const router = useRouter();
     const profile = useUserStore((state) => state.profile);
 
     useEffect(() => {
@@ -49,6 +49,7 @@ export default function AccountForm({ user }: { user: User | null }) {
             alert('Error updating profile!');
         } finally {
             setLoading(false);
+            router.refresh();
         }
     }
     return (

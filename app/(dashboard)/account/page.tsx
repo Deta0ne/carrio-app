@@ -6,6 +6,14 @@ import { ProfileTabsClient } from '@/components/profile/profile-tabs-client';
 import { UserProfileSection } from '@/components/profile/ProfileTab';
 import { PreferencesTab } from '@/components/profile/PreferencesTab';
 import { AccountSettingsTab } from '@/components/profile/AccountSettingsTab';
+import { DocumentsTab } from '@/components/profile/DocumentsTab';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: 'Account',
+    description: 'Account settings and preferences',
+};
+
 export default async function Account() {
     const supabase = await createClient();
 
@@ -75,14 +83,7 @@ export default async function Account() {
                             </TabsContent>
 
                             <TabsContent value="documents" className="mt-0">
-                                <div className="space-y-4">
-                                    <div className="p-6 border rounded-lg shadow-sm">
-                                        <h2 className="text-xl font-semibold mb-4">Documents</h2>
-                                        <p className="text-muted-foreground">
-                                            This section will contain document management.
-                                        </p>
-                                    </div>
-                                </div>
+                                <DocumentsTab />
                             </TabsContent>
                         </div>
                     </div>

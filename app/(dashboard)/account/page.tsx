@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { User, Briefcase, Settings, FileText } from 'lucide-react';
 import { ProfileTabsClient } from '@/components/profile/profile-tabs-client';
+import { UserProfileSection } from '@/components/profile/ProfileTab';
 
 export default async function Account() {
     const supabase = await createClient();
@@ -62,14 +63,7 @@ export default async function Account() {
 
                         <div className="flex-1">
                             <TabsContent value="profile" className="mt-0">
-                                <div className="space-y-4">
-                                    <div className="p-6 border rounded-lg shadow-sm">
-                                        <h2 className="text-xl font-semibold mb-4">Profile Information</h2>
-                                        <p className="text-muted-foreground">
-                                            This section will contain user profile information.
-                                        </p>
-                                    </div>
-                                </div>
+                                <UserProfileSection user={user} />
                             </TabsContent>
 
                             <TabsContent value="account" className="mt-0">

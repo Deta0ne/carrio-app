@@ -24,7 +24,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
             job_title,
             experience,
             updated_at,
-            avatar_url
+            avatar_url,
+            username,
+            bio
         `,
         )
         .eq('id', user?.id)

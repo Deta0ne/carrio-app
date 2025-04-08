@@ -93,7 +93,7 @@ export const PreferencesTab = () => {
     }, []);
 
     return (
-        <Card>
+        <Card style={{ backgroundColor: 'transparent' }}>
             <CardHeader className="relative">
                 <MockDataIndicator />
                 <CardTitle>Job Search Preferences</CardTitle>

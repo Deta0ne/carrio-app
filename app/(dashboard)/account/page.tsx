@@ -5,7 +5,7 @@ import { TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { User, Briefcase, Settings, FileText } from 'lucide-react';
 import { ProfileTabsClient } from '@/components/profile/profile-tabs-client';
 import { UserProfileSection } from '@/components/profile/ProfileTab';
-
+import { PreferencesTab } from '@/components/profile/PreferencesTab';
 export default async function Account() {
     const supabase = await createClient();
 
@@ -76,14 +76,7 @@ export default async function Account() {
                             </TabsContent>
 
                             <TabsContent value="preferences" className="mt-0">
-                                <div className="space-y-4">
-                                    <div className="p-6 border rounded-lg shadow-sm">
-                                        <h2 className="text-xl font-semibold mb-4">Job Preferences</h2>
-                                        <p className="text-muted-foreground">
-                                            This section will contain job preferences settings.
-                                        </p>
-                                    </div>
-                                </div>
+                                <PreferencesTab />
                             </TabsContent>
 
                             <TabsContent value="documents" className="mt-0">

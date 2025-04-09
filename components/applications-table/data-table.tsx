@@ -103,7 +103,6 @@ export function DataTable<TData extends { id: string }, TValue>({ columns, data 
                             </TableBody>
                         </Table>
                     </div>
-                    <DataTablePagination table={table} />
                 </>
             ) : (
                 <div className="grid grid-cols-1 gap-4">
@@ -113,6 +112,7 @@ export function DataTable<TData extends { id: string }, TValue>({ columns, data 
                     })}
                 </div>
             )}
+            <DataTablePagination table={table} />
         </div>
     );
 }

@@ -21,6 +21,8 @@ import { useMediaQuery } from '@/hooks/use-media-query';
 import JobCard from '@/components/ApplicationCard';
 import { JobApplication } from '@/types/database';
 import Loading from '@/app/(dashboard)/home/loading';
+import { globalSearchFilter } from '@/utils/table-helpers';
+
 interface DataTableProps<TData extends { id: string }, TValue> {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
@@ -31,6 +33,7 @@ export function DataTable<TData extends { id: string }, TValue>({ columns, data 
     const [rowSelection, setRowSelection] = React.useState({});
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+    const [globalFilter, setGlobalFilter] = React.useState('');
     const [sorting, setSorting] = React.useState<SortingState>([]);
     const isDesktop = useMediaQuery('(min-width: 768px)');
 
@@ -42,12 +45,15 @@ export function DataTable<TData extends { id: string }, TValue>({ columns, data 
             columnVisibility,
             rowSelection,
             columnFilters,
+            globalFilter,
         },
         enableRowSelection: true,
         onRowSelectionChange: setRowSelection,
         onSortingChange: setSorting,
         onColumnFiltersChange: setColumnFilters,
+        onGlobalFilterChange: setGlobalFilter,
         onColumnVisibilityChange: setColumnVisibility,
+        globalFilterFn: globalSearchFilter,
         getCoreRowModel: getCoreRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
@@ -55,6 +61,7 @@ export function DataTable<TData extends { id: string }, TValue>({ columns, data 
         getFacetedRowModel: getFacetedRowModel(),
         getFacetedUniqueValues: getFacetedUniqueValues(),
     });
+
     React.useEffect(() => {
         setIsMounted(true);
     }, []);
@@ -62,6 +69,7 @@ export function DataTable<TData extends { id: string }, TValue>({ columns, data 
     if (!isMounted) {
         return <Loading />;
     }
+
     return (
         <div className="space-y-4">
             <DataTableToolbar table={table} />

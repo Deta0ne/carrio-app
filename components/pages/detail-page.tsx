@@ -110,17 +110,17 @@ export function DetailPageComponent({ application }: { application: Application 
     };
 
     return (
-        <Card className="max-w-5xl mx-auto bg-white dark:bg-gray-900 shadow-lg">
+        <Card className="max-w-5xl mx-auto bg-white dark:bg-gray-900 shadow-lg w-full overflow-hidden">
             {/* Top Section - Summary Information */}
-            <div className="p-8 border-b border-gray-100 dark:border-gray-800">
-                <div className="flex items-center justify-between mb-6">
+            <div className="p-4 sm:p-6 md:p-8 border-b border-gray-100 dark:border-gray-800">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                     <div>
                         {application.company_website ? (
                             <a
                                 href={application.company_website}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center text-3xl font-semibold text-gray-900 dark:text-gray-50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors group"
+                                className="inline-flex items-center text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-gray-50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors group"
                                 aria-label={`Visit ${application.company_name} website`}
                             >
                                 {application.company_name}
@@ -128,7 +128,7 @@ export function DetailPageComponent({ application }: { application: Application 
                                 <span className="sr-only">Opens in a new tab</span>
                             </a>
                         ) : (
-                            <h2 className="text-3xl font-semibold text-gray-900 dark:text-gray-50">
+                            <h2 className="text-2xl sm:text-3xl font-semibold text-gray-900 dark:text-gray-50">
                                 {application.company_name}
                             </h2>
                         )}
@@ -172,10 +172,10 @@ export function DetailPageComponent({ application }: { application: Application 
             </div>
 
             {/* Middle Section - Interview and Files */}
-            <div className="p-8 border-b border-gray-100 dark:border-gray-800">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <Card className="p-6 bg-gray-50 dark:bg-gray-800/50 border-none">
-                        <div className="flex justify-between items-center mb-6">
+            <div className="p-4 sm:p-6 md:p-8 border-b border-gray-100 dark:border-gray-800">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
+                    <Card className="p-4 sm:p-6 bg-gray-50 dark:bg-gray-800/50 border-none">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-50 flex items-center">
                                 <CalendarIcon className="mr-2 h-5 w-5 text-blue-500" />
                                 Interview
@@ -209,8 +209,8 @@ export function DetailPageComponent({ application }: { application: Application 
                     </Card>
 
                     {/* Files */}
-                    <Card className="p-6 bg-gray-50 dark:bg-gray-800/50 border-none">
-                        <div className="flex justify-between items-center mb-6">
+                    <Card className="p-4 sm:p-6 bg-gray-50 dark:bg-gray-800/50 border-none">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-50 flex items-center">
                                 <Paperclip className="mr-2 h-5 w-5 text-purple-500" />
                                 Documents
@@ -224,8 +224,8 @@ export function DetailPageComponent({ application }: { application: Application 
                             </Button>
                         </div>
                         <div className="space-y-3">
-                            <div className="flex items-center p-3 rounded-lg hover:bg-white dark:hover:bg-gray-800 transition-colors">
-                                <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center text-purple-600 dark:text-purple-400 font-medium mr-3">
+                            <div className="flex items-center p-2 sm:p-3 rounded-lg hover:bg-white dark:hover:bg-gray-800 transition-colors">
+                                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center text-purple-600 dark:text-purple-400 font-medium mr-3">
                                     CV
                                 </div>
                                 <div>
@@ -235,8 +235,8 @@ export function DetailPageComponent({ application }: { application: Application 
                                     <div className="text-xs text-gray-500 dark:text-gray-400">CV</div>
                                 </div>
                             </div>
-                            <div className="flex items-center p-3 rounded-lg hover:bg-white dark:hover:bg-gray-800 transition-colors">
-                                <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center text-purple-600 dark:text-purple-400 font-medium mr-3">
+                            <div className="flex items-center p-2 sm:p-3 rounded-lg hover:bg-white dark:hover:bg-gray-800 transition-colors">
+                                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center text-purple-600 dark:text-purple-400 font-medium mr-3">
                                     CL
                                 </div>
                                 <div>
@@ -252,12 +252,12 @@ export function DetailPageComponent({ application }: { application: Application 
             </div>
 
             {/* Notes Section */}
-            <div className="p-8">
+            <div className="p-4 sm:p-6 md:p-8">
                 <NotesList applicationId={application.id} />
             </div>
 
             {/* Bottom Section - User Actions */}
-            <div className="px-8 py-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between rounded-bl-lg rounded-br-lg">
+            <div className="px-4 sm:px-6 md:px-8 py-4 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center space-x-2">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Status:</span>
                     <div className="relative">
@@ -280,7 +280,7 @@ export function DetailPageComponent({ application }: { application: Application 
                     job={application as unknown as JobApplication}
                     onDelete={handleDeleteApplication}
                 >
-                    <Button variant="destructive" className="hover:bg-red-600">
+                    <Button variant="destructive" className="hover:bg-red-600 w-full sm:w-auto">
                         <Trash2 className="h-4 w-4 mr-2" />
                         Delete Application
                     </Button>

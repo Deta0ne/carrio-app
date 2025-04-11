@@ -14,14 +14,26 @@ export const notesService = {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error('Not authenticated');
 
-            const { error, data } = await supabase.from('application_notes').insert({
+            const now = new Date().toISOString();
+            
+            const { error: noteError, data } = await supabase.from('application_notes').insert({
                 application_id: applicationId,
                 user_id: user.id,
                 content: values.content,
                 importance: values.importance || 'medium',
             }).select();
 
-            if (error) throw error;
+            if (noteError) throw noteError;
+            
+            const { error: updateError } = await supabase
+                .from('job_applications')
+                .update({
+                    last_update: now
+                })
+                .eq('id', applicationId)
+                .eq('user_id', user.id);
+                
+            if (updateError) throw updateError;
 
             toast.success('Note added successfully');
             return { success: true, data: data[0] };
@@ -38,19 +50,40 @@ export const notesService = {
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error('Not authenticated');
+            
+            const now = new Date().toISOString();
 
-            const { error, data } = await supabase
+            const { data: noteData, error: fetchError } = await supabase
+                .from('application_notes')
+                .select('application_id')
+                .eq('id', noteId)
+                .eq('user_id', user.id)
+                .single();
+                
+            if (fetchError) throw fetchError;
+            
+            const { error: noteError, data } = await supabase
                 .from('application_notes')
                 .update({
                     content: values.content,
                     importance: values.importance,
-                    updated_at: new Date().toISOString(),
+                    updated_at: now,
                 })
                 .eq('id', noteId)
                 .eq('user_id', user.id)
                 .select();
 
-            if (error) throw error;
+            if (noteError) throw noteError;
+            
+            const { error: updateError } = await supabase
+                .from('job_applications')
+                .update({
+                    last_update: now
+                })
+                .eq('id', noteData.application_id)
+                .eq('user_id', user.id);
+                
+            if (updateError) throw updateError;
 
             toast.success('Note updated successfully');
             return { success: true, data: data[0] };
@@ -65,14 +98,34 @@ export const notesService = {
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) throw new Error('Not authenticated');
-
-            const { error } = await supabase
+            
+            const { data: noteData, error: fetchError } = await supabase
+                .from('application_notes')
+                .select('application_id')
+                .eq('id', noteId)
+                .eq('user_id', user.id)
+                .single();
+                
+            if (fetchError) throw fetchError;
+            
+            const { error: deleteError } = await supabase
                 .from('application_notes')
                 .delete()
                 .eq('id', noteId)
                 .eq('user_id', user.id);
 
-            if (error) throw error;
+            if (deleteError) throw deleteError;
+            
+            const now = new Date().toISOString();
+            const { error: updateError } = await supabase
+                .from('job_applications')
+                .update({
+                    last_update: now
+                })
+                .eq('id', noteData.application_id)
+                .eq('user_id', user.id);
+                
+            if (updateError) throw updateError;
 
             toast.success('Note deleted successfully');
             return true;

@@ -5,15 +5,15 @@ import { StoreProvider } from '@/providers/store-provider';
 import { ThemeProvider } from '@/providers/theme-provider';
 import { Toaster } from 'sonner';
 
-const geistSans = Geist({
-    variable: '--font-geist-sans',
-    subsets: ['latin'],
-});
+// const geistSans = Geist({
+//     variable: '--font-geist-sans',
+//     subsets: ['latin'],
+// });
 
-const geistMono = Geist_Mono({
-    variable: '--font-geist-mono',
-    subsets: ['latin'],
-});
+// const geistMono = Geist_Mono({
+//     variable: '--font-geist-mono',
+//     subsets: ['latin'],
+// });
 
 export const metadata: Metadata = {
     title: 'Carrio',
@@ -27,7 +27,7 @@ export default function RootLayout({
 }>) {
     return (
         <html suppressHydrationWarning lang="en">
-            <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+            <body className="antialiased">
                 <StoreProvider>
                     <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
                         {children}

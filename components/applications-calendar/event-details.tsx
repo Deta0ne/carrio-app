@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 import type { CalendarEvent, JobApplication } from '@/types/calendar';
 import {
     EventHeader,
@@ -11,6 +12,7 @@ import {
     EventDescription,
 } from './event-details-components';
 import { cn } from '@/lib/utils';
+import { ExternalLink } from 'lucide-react';
 
 interface EventDetailsProps {
     event: CalendarEvent;
@@ -54,16 +56,18 @@ export function EventDetails({ event, onClose, applications }: EventDetailsProps
                 </CardContent>
 
                 <CardFooter className="pt-0 flex gap-2">
-                    <Button
-                        variant="outline"
-                        className={cn(
-                            'flex-1 border-[#34e89e]/30 hover:bg-[#0f3443]/10 hover:text-[#34e89e]',
-                            'transition-colors',
-                        )}
-                        onClick={onClose}
-                    >
+                    <Button variant="outline" className={cn('flex-1', 'transition-colors')} onClick={onClose}>
                         Close
                     </Button>
+
+                    {application && (
+                        <Button className={cn('flex-1', 'transition-colors')}>
+                            <Link href={`/home/${application.id}`} className="flex items-center gap-1.5">
+                                <span>View Application</span>
+                                <ExternalLink className="h-3.5 w-3.5" />
+                            </Link>
+                        </Button>
+                    )}
                 </CardFooter>
             </Card>
         </div>

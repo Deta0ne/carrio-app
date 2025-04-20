@@ -78,6 +78,7 @@ export function DetailPageComponent({ application }: { application: Application 
     const handleDeleteApplication = async () => {
         try {
             await applicationsService.deleteApplication(application.id);
+            router.refresh();
             router.push('/home');
         } catch (error) {
             console.error('Error deleting application:', error);

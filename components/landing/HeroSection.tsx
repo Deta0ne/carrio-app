@@ -15,7 +15,7 @@ export default function HeroSection() {
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.5 }}
                 >
-                    <Sparkles className="w-6 h-6 text-[#34e89e] animate-pulse duration-[14000ms]" />
+                    <Sparkles className="w-6 h-6 text-[#34e89e] animate-[pulse_14s_ease-in-out_infinite]" />
                 </motion.div>
                 <motion.div
                     className="absolute top-40 left-20"
@@ -24,24 +24,24 @@ export default function HeroSection() {
                     transition={{ delay: 0.8 }}
                 >
                     <Sparkles
-                        className="w-4 h-4 text-[#34e89e] animate-pulse duration-[18000ms] delay-3000"
+                        className="w-4 h-4 text-[#34e89e] animate-[pulse_18s_ease-in-out_infinite]"
                         style={{ animationDelay: '1s' }}
                     />
                 </motion.div>
 
                 <div className="text-center max-w-3xl mx-auto">
                     <motion.div
-                        className="mb-8 inline-flex items-center px-3 py-1 rounded-full border border-[#34e89e]/30 bg-[#34e89e]/5 text-[#34e89e] text-sm"
+                        className="mb-8 inline-flex items-center px-3 py-1 rounded-full border border-[#34e89e]/40 bg-[#34e89e]/10 text-[#34e89e] text-sm"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
                     >
-                        <Zap className="w-4 h-4 mr-2 animate-pulse duration-[8000ms]" />
+                        <Zap className="w-4 h-4 mr-2 animate-[pulse_8s_ease-in-out_infinite]" />
                         <span>Revolutionizing Job Applications</span>
                     </motion.div>
 
                     <motion.h1
-                        className="text-4xl md:text-6xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white via-[#34e89e] to-white animate-pulse duration-[16000ms]"
+                        className="text-4xl md:text-6xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white via-[#34e89e] to-white/90 animate-[pulse_16s_ease-in-out_infinite]"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.2 }}
@@ -50,7 +50,7 @@ export default function HeroSection() {
                     </motion.h1>
 
                     <motion.p
-                        className="text-xl text-white/70 mb-10 max-w-2xl mx-auto"
+                        className="text-xl text-white/80 mb-10 max-w-2xl mx-auto"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.4 }}
@@ -65,7 +65,7 @@ export default function HeroSection() {
                         transition={{ duration: 0.5, delay: 0.6 }}
                     >
                         <Link href="/register" className="group relative">
-                            <div className="absolute -inset-1 bg-gradient-to-r from-[#34e89e] to-[#0f3443] rounded-full opacity-70 blur-md group-hover:opacity-100 transition duration-2000 animate-pulse duration-[12000ms]"></div>
+                            <div className="absolute -inset-1 bg-gradient-to-r from-[#34e89e] to-[#0f3443] rounded-full opacity-70 blur-md group-hover:opacity-100 transition duration-2000 animate-[pulse_12s_ease-in-out_infinite]"></div>
                             <button className="relative px-8 py-4 bg-[#050a14] rounded-full font-medium inline-flex items-center gap-2 group-hover:bg-[#050a14]/80 transition duration-1500">
                                 Get Started
                                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-2000" />
@@ -81,12 +81,12 @@ export default function HeroSection() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.8 }}
                 >
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#34e89e]/10 via-[#0f3443]/10 to-[#34e89e]/10 rounded-xl blur-xl opacity-70 animate-pulse duration-[20000ms]"></div>
-                    <div className="absolute -inset-0.5 bg-gradient-to-r from-[#34e89e]/20 to-[#0f3443]/20 rounded-xl"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#34e89e]/20 via-[#0f3443]/20 to-[#34e89e]/20 rounded-xl blur-xl opacity-80 animate-[pulse_20s_ease-in-out_infinite]"></div>
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-[#34e89e]/30 to-[#0f3443]/30 rounded-xl"></div>
 
-                    <div className="relative bg-[#0a0e18] border border-white/10 rounded-xl overflow-hidden shadow-2xl">
+                    <div className="relative bg-[#030508] border border-white/10 rounded-xl overflow-hidden shadow-2xl">
                         {/* Browser Controls */}
-                        <div className="bg-[#050a14] px-4 py-3 border-b border-white/10 flex items-center">
+                        <div className="bg-[#020304] px-4 py-3 border-b border-white/10 flex items-center">
                             <div className="flex space-x-2">
                                 <div className="w-3 h-3 rounded-full bg-red-500"></div>
                                 <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
@@ -101,7 +101,7 @@ export default function HeroSection() {
                         </div>
 
                         {/* Dashboard Preview */}
-                        <div className="aspect-video bg-[#0a0e18] relative overflow-hidden">
+                        <div className="aspect-video bg-[#030508] relative overflow-hidden">
                             {/* Calendar View Mockup */}
                             <div className="absolute inset-0 flex">
                                 <div className="w-[20%] border-r border-white/10 p-5">
@@ -160,22 +160,26 @@ export default function HeroSection() {
                                     </div>
 
                                     {/* Event Card */}
-                                    <div className="absolute bottom-5 right-5 w-64 bg-[#0d1320] rounded-lg p-4 border border-white/10 shadow-lg transform hover:scale-105 transition-transform duration-2000">
-                                        <div className="flex justify-between items-start mb-3">
+                                    <div className="absolute bottom-5 right-5 w-40 sm:w-56 md:w-64 bg-[#0d1320] rounded-lg p-2 sm:p-3 md:p-4 border border-white/10 shadow-lg transform hover:scale-105 transition-transform duration-2000">
+                                        <div className="flex justify-between items-start mb-1 sm:mb-2 md:mb-3">
                                             <div>
-                                                <div className="text-sm font-medium">Technical Interview</div>
-                                                <div className="text-xs text-white/50">Google</div>
+                                                <div className="text-[10px] sm:text-xs md:text-sm font-medium">
+                                                    Technical Interview
+                                                </div>
+                                                <div className="text-[8px] sm:text-[10px] md:text-xs text-white/50">
+                                                    Google
+                                                </div>
                                             </div>
-                                            <div className="px-2 py-1 bg-blue-500/20 rounded-md text-blue-400 text-xs">
+                                            <div className="px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 bg-blue-500/20 rounded-md text-blue-400 text-[8px] sm:text-[10px] md:text-xs">
                                                 Interview
                                             </div>
                                         </div>
-                                        <div className="flex items-center text-xs text-white/60 mb-2">
-                                            <Calendar className="w-3 h-3 mr-2" />
+                                        <div className="flex items-center text-[8px] sm:text-[10px] md:text-xs text-white/60 mb-1 sm:mb-1 md:mb-2">
+                                            <Calendar className="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 mr-1 sm:mr-1.5 md:mr-2" />
                                             May 15, 2023 • 10:00 AM
                                         </div>
-                                        <div className="flex items-center text-xs text-white/60">
-                                            <Clock className="w-3 h-3 mr-2" />
+                                        <div className="flex items-center text-[8px] sm:text-[10px] md:text-xs text-white/60">
+                                            <Clock className="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 mr-1 sm:mr-1.5 md:mr-2" />
                                             45 minutes
                                         </div>
                                     </div>
@@ -188,7 +192,7 @@ export default function HeroSection() {
                     </div>
 
                     {/* Glow beneath */}
-                    <div className="absolute -bottom-10 inset-x-0 h-20 bg-[#34e89e]/10 blur-3xl rounded-full"></div>
+                    <div className="absolute -bottom-10 inset-x-0 h-20 bg-[#34e89e]/20 blur-3xl rounded-full"></div>
                 </motion.div>
             </div>
         </div>

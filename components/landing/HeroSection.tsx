@@ -160,22 +160,26 @@ export default function HeroSection() {
                                     </div>
 
                                     {/* Event Card */}
-                                    <div className="absolute bottom-5 right-5 w-64 bg-[#0d1320] rounded-lg p-4 border border-white/10 shadow-lg transform hover:scale-105 transition-transform duration-2000">
-                                        <div className="flex justify-between items-start mb-3">
+                                    <div className="absolute bottom-5 right-5 w-40 sm:w-56 md:w-64 bg-[#0d1320] rounded-lg p-2 sm:p-3 md:p-4 border border-white/10 shadow-lg transform hover:scale-105 transition-transform duration-2000">
+                                        <div className="flex justify-between items-start mb-1 sm:mb-2 md:mb-3">
                                             <div>
-                                                <div className="text-sm font-medium">Technical Interview</div>
-                                                <div className="text-xs text-white/50">Google</div>
+                                                <div className="text-[10px] sm:text-xs md:text-sm font-medium">
+                                                    Technical Interview
+                                                </div>
+                                                <div className="text-[8px] sm:text-[10px] md:text-xs text-white/50">
+                                                    Google
+                                                </div>
                                             </div>
-                                            <div className="px-2 py-1 bg-blue-500/20 rounded-md text-blue-400 text-xs">
+                                            <div className="px-1 py-0.5 sm:px-1.5 sm:py-0.5 md:px-2 md:py-1 bg-blue-500/20 rounded-md text-blue-400 text-[8px] sm:text-[10px] md:text-xs">
                                                 Interview
                                             </div>
                                         </div>
-                                        <div className="flex items-center text-xs text-white/60 mb-2">
-                                            <Calendar className="w-3 h-3 mr-2" />
+                                        <div className="flex items-center text-[8px] sm:text-[10px] md:text-xs text-white/60 mb-1 sm:mb-1 md:mb-2">
+                                            <Calendar className="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 mr-1 sm:mr-1.5 md:mr-2" />
                                             May 15, 2023 • 10:00 AM
                                         </div>
-                                        <div className="flex items-center text-xs text-white/60">
-                                            <Clock className="w-3 h-3 mr-2" />
+                                        <div className="flex items-center text-[8px] sm:text-[10px] md:text-xs text-white/60">
+                                            <Clock className="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 mr-1 sm:mr-1.5 md:mr-2" />
                                             45 minutes
                                         </div>
                                     </div>

@@ -31,7 +31,7 @@ export default function HeroSection() {
 
                 <div className="text-center max-w-3xl mx-auto">
                     <motion.div
-                        className="mb-8 inline-flex items-center px-3 py-1 rounded-full border border-[#34e89e]/30 bg-[#34e89e]/5 text-[#34e89e] text-sm"
+                        className="mb-8 inline-flex items-center px-3 py-1 rounded-full border border-[#34e89e]/40 bg-[#34e89e]/10 text-[#34e89e] text-sm"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
@@ -41,7 +41,7 @@ export default function HeroSection() {
                     </motion.div>
 
                     <motion.h1
-                        className="text-4xl md:text-6xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white via-[#34e89e] to-white animate-pulse duration-[16000ms]"
+                        className="text-4xl md:text-6xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white via-[#34e89e] to-white/90 animate-pulse duration-[16000ms]"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.2 }}
@@ -50,7 +50,7 @@ export default function HeroSection() {
                     </motion.h1>
 
                     <motion.p
-                        className="text-xl text-white/70 mb-10 max-w-2xl mx-auto"
+                        className="text-xl text-white/80 mb-10 max-w-2xl mx-auto"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.4 }}
@@ -81,12 +81,12 @@ export default function HeroSection() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.8 }}
                 >
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#34e89e]/10 via-[#0f3443]/10 to-[#34e89e]/10 rounded-xl blur-xl opacity-70 animate-pulse duration-[20000ms]"></div>
-                    <div className="absolute -inset-0.5 bg-gradient-to-r from-[#34e89e]/20 to-[#0f3443]/20 rounded-xl"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#34e89e]/20 via-[#0f3443]/20 to-[#34e89e]/20 rounded-xl blur-xl opacity-80 animate-pulse duration-[20000ms]"></div>
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-[#34e89e]/30 to-[#0f3443]/30 rounded-xl"></div>
 
-                    <div className="relative bg-[#0a0e18] border border-white/10 rounded-xl overflow-hidden shadow-2xl">
+                    <div className="relative bg-[#030508] border border-white/10 rounded-xl overflow-hidden shadow-2xl">
                         {/* Browser Controls */}
-                        <div className="bg-[#050a14] px-4 py-3 border-b border-white/10 flex items-center">
+                        <div className="bg-[#020304] px-4 py-3 border-b border-white/10 flex items-center">
                             <div className="flex space-x-2">
                                 <div className="w-3 h-3 rounded-full bg-red-500"></div>
                                 <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
@@ -101,7 +101,7 @@ export default function HeroSection() {
                         </div>
 
                         {/* Dashboard Preview */}
-                        <div className="aspect-video bg-[#0a0e18] relative overflow-hidden">
+                        <div className="aspect-video bg-[#030508] relative overflow-hidden">
                             {/* Calendar View Mockup */}
                             <div className="absolute inset-0 flex">
                                 <div className="w-[20%] border-r border-white/10 p-5">
@@ -192,7 +192,7 @@ export default function HeroSection() {
                     </div>
 
                     {/* Glow beneath */}
-                    <div className="absolute -bottom-10 inset-x-0 h-20 bg-[#34e89e]/10 blur-3xl rounded-full"></div>
+                    <div className="absolute -bottom-10 inset-x-0 h-20 bg-[#34e89e]/20 blur-3xl rounded-full"></div>
                 </motion.div>
             </div>
         </div>

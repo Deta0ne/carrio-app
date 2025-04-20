@@ -7,6 +7,8 @@ import { motion } from 'framer-motion';
 export default function CTASection() {
     return (
         <div className="relative z-10 py-24 bg-[#050a14] overflow-hidden">
+            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#34e89e]/50 to-transparent"></div>
+
             <div className="absolute inset-0 overflow-hidden">
                 <div className="absolute h-[500px] w-[500px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#34e89e]/20 rounded-full blur-[120px] animate-pulse duration-[30000ms]"></div>
             </div>

@@ -17,6 +17,8 @@ export default function StatisticsSection() {
 
     return (
         <div className="relative z-10 py-24 bg-[#050a14]">
+            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#34e89e]/50 to-transparent"></div>
+
             <div className="max-w-7xl mx-auto px-6">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
                     {[
@@ -53,7 +55,7 @@ function CountingNumber({ value, delay, hasAnimated }: { value: string; delay: n
     const numericValue = parseNumericValue(value);
     const motionValue = useMotionValue(0);
     const springValue = useSpring(motionValue, {
-        duration: 3000,
+        duration: 5000,
         bounce: 0.08,
     });
 

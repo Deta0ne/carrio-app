@@ -14,23 +14,23 @@ export const metadata: Metadata = {
 
 export default function Home() {
     return (
-        <div className="flex flex-col min-h-screen bg-[#050a14] text-white overflow-hidden">
+        <div className="flex flex-col min-h-screen bg-[#030508] text-white overflow-hidden">
             {/* Animated Background */}
             <div className="fixed inset-0 z-0">
                 {/* Grid pattern overlay */}
-                <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f103000_1px,transparent_1px),linear-gradient(to_bottom,#0f103000_1px,transparent_1px)] bg-[size:44px_44px] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,#000_30%,transparent_100%)]"></div>
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f103000_1px,transparent_1px),linear-gradient(to_bottom,#0f103000_1px,transparent_1px)] bg-[size:44px_44px] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,#000_40%,transparent_100%)]"></div>
 
                 {/* Gradient Orbs */}
-                <div className="absolute top-1/4 -left-20 w-[500px] h-[500px] rounded-full bg-[#34e89e]/20 blur-[100px] animate-pulse duration-[16000ms]"></div>
-                <div className="absolute bottom-1/4 -right-20 w-[400px] h-[400px] rounded-full bg-[#0f3443]/30 blur-[100px] animate-pulse duration-[20000ms] delay-2000"></div>
-                <div className="absolute top-3/4 left-1/3 w-[300px] h-[300px] rounded-full bg-blue-500/10 blur-[100px] animate-pulse duration-[24000ms] delay-4000"></div>
+                <div className="absolute top-1/4 -left-20 w-[500px] h-[500px] rounded-full bg-[#34e89e]/30 blur-[120px] animate-pulse duration-[16000ms]"></div>
+                <div className="absolute bottom-1/4 -right-20 w-[400px] h-[400px] rounded-full bg-[#0f3443]/40 blur-[120px] animate-pulse duration-[20000ms] delay-2000"></div>
+                <div className="absolute top-3/4 left-1/3 w-[300px] h-[300px] rounded-full bg-blue-500/20 blur-[120px] animate-pulse duration-[24000ms] delay-4000"></div>
 
                 {/* Animated lines/particles */}
-                <div className="absolute inset-0 overflow-hidden opacity-30">
+                <div className="absolute inset-0 overflow-hidden opacity-40">
                     {[...Array(15)].map((_, i) => (
                         <div
                             key={i}
-                            className="absolute h-[1px] bg-gradient-to-r from-transparent via-[#34e89e]/50 to-transparent animate-pulse opacity-70 duration-[10000ms]"
+                            className="absolute h-[1px] bg-gradient-to-r from-transparent via-[#34e89e]/60 to-transparent animate-pulse opacity-70 duration-[10000ms]"
                             style={{
                                 top: `${Math.random() * 100}%`,
                                 left: 0,
@@ -43,7 +43,7 @@ export default function Home() {
             </div>
 
             {/* Navbar with frosted glass effect */}
-            <nav className="sticky top-0 z-50 backdrop-blur-md bg-[#050a14]/80 border-b border-white/10">
+            <nav className="sticky top-0 z-50 backdrop-blur-md bg-[#030508]/90 border-b border-white/10">
                 <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
                     <div className="flex items-center space-x-2">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#34e89e] to-[#0f3443] flex items-center justify-center">
@@ -157,8 +157,7 @@ export default function Home() {
                         </div>
                         <div className="flex space-x-4 mt-4 md:mt-0">
                             {[
-                                { name: 'X', href: '#' },
-                                { name: 'LinkedIn', href: 'www.linkedin.com/in/mert-yıldız-60b519227' },
+                                { name: 'LinkedIn', href: 'https://www.linkedin.com/in/mert-yıldız-60b519227' },
                                 { name: 'GitHub', href: 'https://github.com/Deta0ne/carrio-app' },
                                 {
                                     name: 'Instagram',

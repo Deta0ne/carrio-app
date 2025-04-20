@@ -35,7 +35,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
                     alt="Login background"
                     fill
                     priority
-                    className="object-cover dark:grayscale"
+                    className="object-cover"
                     sizes="(min-width: 1024px) 50vw, 0vw"
                 />
             </div>

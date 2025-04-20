@@ -75,7 +75,7 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
                             <FormItem>
                                 <FormLabel>Email</FormLabel>
                                 <FormControl>
-                                    <Input type="email" placeholder="m@example.com" {...field} />
+                                    <Input type="email" placeholder="m@example.com" {...field} autoComplete="email" />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -88,7 +88,7 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
                             <FormItem>
                                 <FormLabel>Name</FormLabel>
                                 <FormControl>
-                                    <Input type="text" {...field} />
+                                    <Input type="text" {...field} autoComplete="name" />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -101,7 +101,7 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
                             <FormItem>
                                 <FormLabel>Surname</FormLabel>
                                 <FormControl>
-                                    <Input type="text" {...field} />
+                                    <Input type="text" {...field} autoComplete="family-name" />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -114,7 +114,12 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
                             <FormItem>
                                 <FormLabel>Password</FormLabel>
                                 <FormControl>
-                                    <Input type="password" placeholder="At least 6 characters" {...field} />
+                                    <Input
+                                        type="password"
+                                        placeholder="At least 6 characters"
+                                        {...field}
+                                        autoComplete="new-password"
+                                    />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -127,7 +132,12 @@ export function RegisterForm({ className, ...props }: React.ComponentPropsWithou
                             <FormItem>
                                 <FormLabel>Confirm Password</FormLabel>
                                 <FormControl>
-                                    <Input type="password" placeholder="Re-enter your password" {...field} />
+                                    <Input
+                                        type="password"
+                                        placeholder="Re-enter your password"
+                                        {...field}
+                                        autoComplete="new-password"
+                                    />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>

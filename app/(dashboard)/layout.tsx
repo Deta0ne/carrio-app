@@ -5,6 +5,7 @@ import { createClient } from '@/utils/supabase/server';
 import { Header } from '@/components/layout/header';
 import { Toaster } from 'sonner';
 import { ErrorBoundary } from '@/components/error-boundary';
+import { redirect } from 'next/navigation';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
     const supabase = await createClient();
@@ -13,6 +14,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
         data: { user },
     } = await supabase.auth.getUser();
 
+    if (!user) {
+        redirect('/login');
+    }
     const { data: profile } = await supabase
         .from('profiles')
         .select(

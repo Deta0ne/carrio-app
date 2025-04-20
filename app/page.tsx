@@ -21,16 +21,16 @@ export default function Home() {
                 <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f103000_1px,transparent_1px),linear-gradient(to_bottom,#0f103000_1px,transparent_1px)] bg-[size:44px_44px] [mask-image:radial-gradient(ellipse_80%_80%_at_50%_50%,#000_40%,transparent_100%)]"></div>
 
                 {/* Gradient Orbs */}
-                <div className="absolute top-1/4 -left-20 w-[500px] h-[500px] rounded-full bg-[#34e89e]/30 blur-[120px] animate-pulse duration-[16000ms]"></div>
-                <div className="absolute bottom-1/4 -right-20 w-[400px] h-[400px] rounded-full bg-[#0f3443]/40 blur-[120px] animate-pulse duration-[20000ms] delay-2000"></div>
-                <div className="absolute top-3/4 left-1/3 w-[300px] h-[300px] rounded-full bg-blue-500/20 blur-[120px] animate-pulse duration-[24000ms] delay-4000"></div>
+                <div className="absolute top-1/4 -left-20 w-[500px] h-[500px] rounded-full bg-[#34e89e]/30 blur-[120px] animate-pulse duration-&lsqb;16000ms&rsqb"></div>
+                <div className="absolute bottom-1/4 -right-20 w-[400px] h-[400px] rounded-full bg-[#0f3443]/40 blur-[120px] animate-pulse duration-&lsqb;20000ms&rsqb delay-2000"></div>
+                <div className="absolute top-3/4 left-1/3 w-[300px] h-[300px] rounded-full bg-blue-500/20 blur-[120px] animate-pulse duration-&lsqb;24000ms&rsqb delay-4000"></div>
 
                 {/* Animated lines/particles */}
                 <div className="absolute inset-0 overflow-hidden opacity-40">
                     {[...Array(15)].map((_, i) => (
                         <div
                             key={i}
-                            className="absolute h-[1px] bg-gradient-to-r from-transparent via-[#34e89e]/60 to-transparent animate-pulse opacity-70 duration-[10000ms]"
+                            className="absolute h-[1px] bg-gradient-to-r from-transparent via-[#34e89e]/60 to-transparent animate-pulse opacity-70 duration-&lsqb;10000ms&rsqb"
                             style={{
                                 top: `${Math.random() * 100}%`,
                                 left: 0,

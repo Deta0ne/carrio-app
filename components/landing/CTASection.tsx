@@ -10,7 +10,7 @@ export default function CTASection() {
             <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#34e89e]/50 to-transparent"></div>
 
             <div className="absolute inset-0 overflow-hidden">
-                <div className="absolute h-[500px] w-[500px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#34e89e]/20 rounded-full blur-[120px] animate-pulse duration-[30000ms]"></div>
+                <div className="absolute h-[500px] w-[500px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#34e89e]/20 rounded-full blur-[120px] animate-[pulse_30s_ease-in-out_infinite]"></div>
             </div>
 
             <div className="max-w-4xl mx-auto px-6 relative" id="cta-section">
@@ -65,7 +65,7 @@ export default function CTASection() {
                             transition={{ duration: 0.5, delay: 0.6 }}
                         >
                             <Link href="/register" className="group relative">
-                                <div className="absolute -inset-1 bg-gradient-to-r from-[#34e89e] to-[#0f3443] rounded-full opacity-70 blur-md group-hover:opacity-100 transition duration-2000 animate-pulse duration-[16000ms]"></div>
+                                <div className="absolute -inset-1 bg-gradient-to-r from-[#34e89e] to-[#0f3443] rounded-full opacity-70 blur-md group-hover:opacity-100 transition duration-2000 animate-[pulse_16s_ease-in-out_infinite]"></div>
                                 <button className="relative px-8 py-4 bg-[#050a14] rounded-full font-medium inline-flex items-center gap-2 group-hover:bg-[#050a14]/80 transition duration-1500">
                                     Get Started For Free
                                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-2000" />

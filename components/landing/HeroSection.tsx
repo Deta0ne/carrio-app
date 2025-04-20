@@ -15,7 +15,7 @@ export default function HeroSection() {
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.5 }}
                 >
-                    <Sparkles className="w-6 h-6 text-[#34e89e] animate-pulse duration-[14000ms]" />
+                    <Sparkles className="w-6 h-6 text-[#34e89e] animate-[pulse_14s_ease-in-out_infinite]" />
                 </motion.div>
                 <motion.div
                     className="absolute top-40 left-20"
@@ -24,7 +24,7 @@ export default function HeroSection() {
                     transition={{ delay: 0.8 }}
                 >
                     <Sparkles
-                        className="w-4 h-4 text-[#34e89e] animate-pulse duration-[18000ms] delay-3000"
+                        className="w-4 h-4 text-[#34e89e] animate-[pulse_18s_ease-in-out_infinite]"
                         style={{ animationDelay: '1s' }}
                     />
                 </motion.div>
@@ -36,12 +36,12 @@ export default function HeroSection() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
                     >
-                        <Zap className="w-4 h-4 mr-2 animate-pulse duration-[8000ms]" />
+                        <Zap className="w-4 h-4 mr-2 animate-[pulse_8s_ease-in-out_infinite]" />
                         <span>Revolutionizing Job Applications</span>
                     </motion.div>
 
                     <motion.h1
-                        className="text-4xl md:text-6xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white via-[#34e89e] to-white/90 animate-pulse duration-[16000ms]"
+                        className="text-4xl md:text-6xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white via-[#34e89e] to-white/90 animate-[pulse_16s_ease-in-out_infinite]"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.2 }}
@@ -65,7 +65,7 @@ export default function HeroSection() {
                         transition={{ duration: 0.5, delay: 0.6 }}
                     >
                         <Link href="/register" className="group relative">
-                            <div className="absolute -inset-1 bg-gradient-to-r from-[#34e89e] to-[#0f3443] rounded-full opacity-70 blur-md group-hover:opacity-100 transition duration-2000 animate-pulse duration-[12000ms]"></div>
+                            <div className="absolute -inset-1 bg-gradient-to-r from-[#34e89e] to-[#0f3443] rounded-full opacity-70 blur-md group-hover:opacity-100 transition duration-2000 animate-[pulse_12s_ease-in-out_infinite]"></div>
                             <button className="relative px-8 py-4 bg-[#050a14] rounded-full font-medium inline-flex items-center gap-2 group-hover:bg-[#050a14]/80 transition duration-1500">
                                 Get Started
                                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-2000" />
@@ -81,7 +81,7 @@ export default function HeroSection() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.8 }}
                 >
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#34e89e]/20 via-[#0f3443]/20 to-[#34e89e]/20 rounded-xl blur-xl opacity-80 animate-pulse duration-[20000ms]"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#34e89e]/20 via-[#0f3443]/20 to-[#34e89e]/20 rounded-xl blur-xl opacity-80 animate-[pulse_20s_ease-in-out_infinite]"></div>
                     <div className="absolute -inset-0.5 bg-gradient-to-r from-[#34e89e]/30 to-[#0f3443]/30 rounded-xl"></div>
 
                     <div className="relative bg-[#030508] border border-white/10 rounded-xl overflow-hidden shadow-2xl">

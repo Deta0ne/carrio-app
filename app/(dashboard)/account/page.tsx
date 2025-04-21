@@ -29,6 +29,8 @@ export default async function Account() {
         data: { user },
     } = await supabase.auth.getUser();
 
+    const { data: documents } = await supabase.from('documents').select('*').order('created_at', { ascending: false });
+
     return (
         <main className="min-h-screen bg-background p-4 md:p-8">
             <div className="mx-auto max-w-4xl">
@@ -83,7 +85,7 @@ export default async function Account() {
                             </TabsContent>
 
                             <TabsContent value="documents" className="mt-0">
-                                <DocumentsTab />
+                                <DocumentsTab initialDocument={documents?.[0] ?? null} />
                             </TabsContent>
                         </div>
                     </div>

@@ -1,28 +1,38 @@
 'use client';
 
 import type React from 'react';
-
 import { useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { FileText, Upload, Loader2, File, Download, Trash2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import MockDataIndicator from '@/components/profile/preferences/MockDataIndicator';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
+import { Document, uploadDocument, deleteDocument, downloadDocument } from '@/utils/supabase/documents';
 
-export function DocumentsTab() {
+interface DocumentsTabProps {
+    initialDocument: Document | null;
+}
+
+export function DocumentsTab({ initialDocument }: DocumentsTabProps) {
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [uploadError, setUploadError] = useState<string | null>(null);
-    const [document, setDocument] = useState<{
-        name: string;
-        size: string;
-        type: string;
-        date: string;
-    } | null>(null);
+    const [document, setDocument] = useState<Document | null>(initialDocument);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
 
@@ -37,39 +47,67 @@ export function DocumentsTab() {
             }
 
             setUploadError(null);
-            simulateUpload(file);
+            await handleUpload(file);
         }
     };
 
-    const simulateUpload = (file: File) => {
+    const handleUpload = async (file: File) => {
         setIsUploading(true);
         setUploadProgress(0);
 
-        setDocument(null);
+        try {
+            // If there's an existing document, delete it first
+            if (document) {
+                await deleteDocument(document);
+            }
 
-        const interval = setInterval(() => {
-            setUploadProgress((prev) => {
-                if (prev >= 100) {
-                    clearInterval(interval);
-                    setIsUploading(false);
+            // Start progress animation
+            const progressInterval = setInterval(() => {
+                setUploadProgress((prev) => Math.min(prev + 5, 90));
+            }, 100);
 
-                    const size =
-                        file.size < 1024 * 1024
-                            ? `${(file.size / 1024).toFixed(1)} KB`
-                            : `${(file.size / (1024 * 1024)).toFixed(1)} MB`;
+            const uploadedDocument = await uploadDocument(file);
 
-                    setDocument({
-                        name: file.name,
-                        size: size,
-                        type: 'Resume/CV',
-                        date: new Date().toLocaleDateString(),
-                    });
+            clearInterval(progressInterval);
+            setUploadProgress(100);
+            setDocument(uploadedDocument);
 
-                    return 100;
-                }
-                return prev + 5;
-            });
-        }, 100);
+            toast.success('Document uploaded successfully');
+        } catch (error) {
+            console.error('Upload error:', error);
+            setUploadError('Failed to upload document. Please try again.');
+            toast.error('Failed to upload document');
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!document) return;
+
+        try {
+            await deleteDocument(document);
+            setDocument(null);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+            toast.success('Document deleted successfully');
+        } catch (error) {
+            console.error('Delete error:', error);
+            toast.error('Failed to delete document');
+        }
+    };
+
+    const handleDownload = async () => {
+        if (!document) return;
+
+        try {
+            const url = await downloadDocument(document);
+            window.open(url, '_blank');
+        } catch (error) {
+            console.error('Download error:', error);
+            toast.error('Failed to download document');
+        }
     };
 
     const handleDragOver = (e: React.DragEvent) => {
@@ -77,7 +115,7 @@ export function DocumentsTab() {
         e.stopPropagation();
     };
 
-    const handleDrop = (e: React.DragEvent) => {
+    const handleDrop = async (e: React.DragEvent) => {
         e.preventDefault();
         e.stopPropagation();
 
@@ -95,7 +133,7 @@ export function DocumentsTab() {
             }
 
             setUploadError(null);
-            simulateUpload(file);
+            await handleUpload(file);
         }
     };
 
@@ -105,19 +143,19 @@ export function DocumentsTab() {
         }
     };
 
-    const handleDelete = () => {
-        setDocument(null);
-        if (fileInputRef.current) {
-            fileInputRef.current.value = '';
-        }
+    const formatFileSize = (bytes: number): string => {
+        return bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(1)} KB` : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    };
+
+    const formatDate = (dateString: string): string => {
+        return new Date(dateString).toLocaleDateString();
     };
 
     return (
         <Card style={{ backgroundColor: 'transparent' }}>
-            <CardHeader className="relative">
-                <MockDataIndicator />
+            <CardHeader>
                 <CardTitle>Document Management</CardTitle>
-                <CardDescription>Upload and manage your resume and other documents</CardDescription>
+                <CardDescription>Upload and manage your resume</CardDescription>
             </CardHeader>
             <CardContent>
                 {uploadError && (
@@ -129,10 +167,10 @@ export function DocumentsTab() {
                 {!document && !isUploading ? (
                     <div
                         className={`
-              border-2 border-dashed rounded-lg p-6 text-center
-              border-border hover:border-primary/30 hover:bg-primary/10
-              transition-colors duration-200 cursor-pointer
-            `}
+                            border-2 border-dashed rounded-lg p-6 text-center
+                            border-border hover:border-primary/30 hover:bg-primary/10
+                            transition-colors duration-200 cursor-pointer
+                        `}
                         onDragOver={handleDragOver}
                         onDrop={handleDrop}
                         onClick={triggerFileInput}
@@ -186,28 +224,50 @@ export function DocumentsTab() {
                                             variant="ghost"
                                             size="sm"
                                             className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                                            onClick={handleDownload}
                                         >
                                             <Download className="h-4 w-4" />
                                             <span className="sr-only">Download</span>
                                         </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
-                                            onClick={handleDelete}
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                            <span className="sr-only">Delete</span>
-                                        </Button>
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                    <span className="sr-only">Delete</span>
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Delete Document</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        Are you sure you want to delete this document? This action
+                                                        cannot be undone.
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction
+                                                        onClick={handleDelete}
+                                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                                    >
+                                                        Delete
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
                                     </div>
                                 </div>
 
                                 <div className="mt-1 flex items-center text-sm text-muted-foreground">
                                     <span>{document.type}</span>
                                     <span className="mx-2">•</span>
-                                    <span>{document.size}</span>
+                                    <span>{formatFileSize(document.size)}</span>
                                     <span className="mx-2">•</span>
-                                    <span>Uploaded on {document.date}</span>
+                                    <span>Uploaded on {formatDate(document.created_at)}</span>
                                 </div>
                             </div>
                         </div>

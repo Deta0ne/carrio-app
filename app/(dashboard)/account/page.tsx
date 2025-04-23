@@ -6,8 +6,9 @@ import { ProfileTabsClient } from '@/components/profile/profile-tabs-client';
 import { UserProfileSection } from '@/components/profile/ProfileTab';
 import { PreferencesTab } from '@/components/profile/PreferencesTab';
 import { AccountSettingsTab } from '@/components/profile/AccountSettingsTab';
-import { DocumentsTab } from '@/components/profile/DocumentsTab';
+import { DocumentsTab } from '@/components/profile/documents/DocumentsTab';
 import { Metadata } from 'next';
+import { serverProfileService } from '@/utils/supabase/server-services';
 
 export const metadata: Metadata = {
     title: 'Account',
@@ -30,6 +31,12 @@ export default async function Account() {
     } = await supabase.auth.getUser();
 
     const { data: documents } = await supabase.from('documents').select('*').order('created_at', { ascending: false });
+
+    // Fetch profile skills server-side
+    const profileSkills = user ? await serverProfileService.getProfileSkills(user.id) : null;
+    const categorizedSkills = profileSkills?.categorized_skills || null;
+    const extractedSkills = profileSkills?.skills || null;
+    const isSkillsSaved = !!categorizedSkills && Object.keys(categorizedSkills).length > 0;
 
     return (
         <main className="min-h-screen bg-background p-4 md:p-8">
@@ -85,7 +92,13 @@ export default async function Account() {
                             </TabsContent>
 
                             <TabsContent value="documents" className="mt-0">
-                                <DocumentsTab initialDocument={documents?.[0] ?? null} />
+                                <DocumentsTab
+                                    initialDocument={documents?.[0] ?? null}
+                                    initialCategorizedSkills={categorizedSkills}
+                                    initialExtractedSkills={extractedSkills}
+                                    initialIsSkillsSaved={isSkillsSaved}
+                                    defaultActiveTab={categorizedSkills ? 'analysis' : 'document'}
+                                />
                             </TabsContent>
                         </div>
                     </div>

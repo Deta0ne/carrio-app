@@ -1,7 +1,7 @@
 'use client';
 
 import type React from 'react';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -19,7 +19,7 @@ import {
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { Document, uploadDocument, deleteDocument, downloadDocument } from '@/utils/supabase/documents';
+import { Document, uploadDocument, deleteDocument, downloadDocument } from '@/services/documents';
 import { profileService } from '@/services/profile-service';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -209,19 +209,38 @@ export function DocumentsTab({
         if (!document) return;
 
         try {
+            // Show deletion in progress
+            toast.loading('Deleting document...');
+
+            // Delete from storage
             await deleteDocument(document);
+
+            // Clear local state immediately
             setDocument(null);
+
+            // Clear other states if needed
             setParsedText(null);
-            setExtractedSkills(null);
-            setCategorizedSkills(null);
-            setIsSkillsSaved(false);
+
+            // Switch to document tab to show upload UI
+            setActiveTab('document');
+
+            // If skills are associated only with this document, could clear them too
+            // But we're keeping skills as they're useful for the profile
+
+            // Reset file input if it exists
             if (fileInputRef.current) {
                 fileInputRef.current.value = '';
             }
+
+            // Dismiss loading toast and show success
+            toast.dismiss();
             toast.success('Document deleted successfully');
+
+            // Refresh the page to get updated data from server
             router.refresh();
         } catch (error) {
             console.error('Delete error:', error);
+            toast.dismiss();
             toast.error('Failed to delete document');
         }
     };

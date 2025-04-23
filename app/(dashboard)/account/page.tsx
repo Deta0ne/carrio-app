@@ -10,12 +10,62 @@ import { DocumentsTab } from '@/components/profile/documents/DocumentsTab';
 import { PreferencesTab } from '@/components/profile/PreferencesTab';
 import { AccountSettingsTab } from '@/components/profile/AccountSettingsTab';
 import { UserProfileSection } from '@/components/profile/ProfileTab';
-import { serverProfileService } from '@/utils/supabase/server-services';
+import { serverProfileService } from '@/services/server-services';
+
+// Force dynamic rendering with no cache
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export const metadata: Metadata = {
     title: 'Account',
     description: 'Account settings and preferences',
 };
+
+// Helper function to ensure data is fresh
+async function getLatestDocument(userId: string) {
+    'use server';
+    const supabase = await createClient();
+
+    // Clear any potentially stale data first with a direct delete of invalid entries
+    try {
+        // Find documents that might be orphaned (file doesn't exist in storage)
+        const { data: potentialOrphans } = await supabase
+            .from('documents')
+            .select('id, file_path')
+            .eq('user_id', userId);
+
+        // Verify each document still exists in storage
+        if (potentialOrphans && potentialOrphans.length > 0) {
+            for (const doc of potentialOrphans) {
+                try {
+                    const { data, error } = await supabase.storage.from('documents').download(doc.file_path);
+
+                    if (error) {
+                        // File doesn't exist in storage, remove the database entry
+                        console.log(`Cleaning up orphaned document: ${doc.id}`);
+                        await supabase.from('documents').delete().eq('id', doc.id);
+                    }
+                } catch (err) {
+                    // Error accessing storage, likely file doesn't exist
+                    console.log(`Error checking document, cleaning up: ${doc.id}`);
+                    await supabase.from('documents').delete().eq('id', doc.id);
+                }
+            }
+        }
+    } catch (err) {
+        console.error('Error cleaning up documents:', err);
+    }
+
+    // Now get the latest valid document
+    const { data: documents } = await supabase
+        .from('documents')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+    return documents?.[0] || null;
+}
 
 // Loading components for Suspense fallbacks
 function DocumentsLoading() {
@@ -60,7 +110,11 @@ export default async function Account() {
         data: { user },
     } = await supabase.auth.getUser();
 
-    const { data: documents } = await supabase.from('documents').select('*').order('created_at', { ascending: false });
+    // Get guaranteed fresh document data
+    let verifiedDocument = null;
+    if (user) {
+        verifiedDocument = await getLatestDocument(user.id);
+    }
 
     // Fetch profile skills server-side
     const profileSkills = user ? await serverProfileService.getProfileSkills(user.id) : null;
@@ -130,11 +184,12 @@ export default async function Account() {
                             <TabsContent value="documents" className="mt-0">
                                 <Suspense fallback={<DocumentsLoading />}>
                                     <DocumentsTab
-                                        initialDocument={documents?.[0] ?? null}
+                                        key={verifiedDocument?.id || 'no-document-' + Date.now()}
+                                        initialDocument={verifiedDocument}
                                         initialCategorizedSkills={categorizedSkills}
                                         initialExtractedSkills={extractedSkills}
                                         initialIsSkillsSaved={isSkillsSaved}
-                                        defaultActiveTab={documents?.[0] ? 'document' : 'analysis'}
+                                        defaultActiveTab={verifiedDocument ? 'document' : 'analysis'}
                                     />
                                 </Suspense>
                             </TabsContent>

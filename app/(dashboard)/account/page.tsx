@@ -3,17 +3,47 @@ import { redirect } from 'next/navigation';
 import { TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { User, Briefcase, Settings, FileText } from 'lucide-react';
 import { ProfileTabsClient } from '@/components/profile/profile-tabs-client';
-import { UserProfileSection } from '@/components/profile/ProfileTab';
+import { Metadata } from 'next';
+import { Suspense } from 'react';
+import { Loader2 } from 'lucide-react';
+import { DocumentsTab } from '@/components/profile/documents/DocumentsTab';
 import { PreferencesTab } from '@/components/profile/PreferencesTab';
 import { AccountSettingsTab } from '@/components/profile/AccountSettingsTab';
-import { DocumentsTab } from '@/components/profile/documents/DocumentsTab';
-import { Metadata } from 'next';
+import { UserProfileSection } from '@/components/profile/ProfileTab';
 import { serverProfileService } from '@/utils/supabase/server-services';
 
 export const metadata: Metadata = {
     title: 'Account',
     description: 'Account settings and preferences',
 };
+
+// Loading components for Suspense fallbacks
+function DocumentsLoading() {
+    return (
+        <div className="flex flex-col items-center justify-center space-y-4 py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground">Loading document data...</p>
+        </div>
+    );
+}
+
+function ProfileLoading() {
+    return (
+        <div className="flex items-center justify-center p-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="ml-2 text-sm text-muted-foreground">Loading profile...</p>
+        </div>
+    );
+}
+
+function GenericLoading() {
+    return (
+        <div className="flex items-center justify-center p-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="ml-2 text-sm text-muted-foreground">Loading...</p>
+        </div>
+    );
+}
 
 export default async function Account() {
     const supabase = await createClient();
@@ -73,32 +103,40 @@ export default async function Account() {
                                     className="w-full justify-start text-sm py-2 px-3 data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-primary/20 data-[state=active]:text-primary dark:data-[state=active]:text-primary/90 data-[state=active]:border-l-2 data-[state=active]:border-primary"
                                 >
                                     <FileText className="h-4 w-4 mr-2 data-[state=active]:text-primary" />
-                                    <span>Documents</span>
+                                    <span>Document Management</span>
                                 </TabsTrigger>
                             </TabsList>
                         </div>
 
                         <div className="flex-1">
                             <TabsContent value="profile" className="mt-0">
-                                <UserProfileSection user={user} />
+                                <Suspense fallback={<ProfileLoading />}>
+                                    <UserProfileSection user={user} />
+                                </Suspense>
                             </TabsContent>
 
                             <TabsContent value="account" className="mt-0">
-                                <AccountSettingsTab />
+                                <Suspense fallback={<GenericLoading />}>
+                                    <AccountSettingsTab />
+                                </Suspense>
                             </TabsContent>
 
                             <TabsContent value="preferences" className="mt-0">
-                                <PreferencesTab />
+                                <Suspense fallback={<GenericLoading />}>
+                                    <PreferencesTab />
+                                </Suspense>
                             </TabsContent>
 
                             <TabsContent value="documents" className="mt-0">
-                                <DocumentsTab
-                                    initialDocument={documents?.[0] ?? null}
-                                    initialCategorizedSkills={categorizedSkills}
-                                    initialExtractedSkills={extractedSkills}
-                                    initialIsSkillsSaved={isSkillsSaved}
-                                    defaultActiveTab={categorizedSkills ? 'analysis' : 'document'}
-                                />
+                                <Suspense fallback={<DocumentsLoading />}>
+                                    <DocumentsTab
+                                        initialDocument={documents?.[0] ?? null}
+                                        initialCategorizedSkills={categorizedSkills}
+                                        initialExtractedSkills={extractedSkills}
+                                        initialIsSkillsSaved={isSkillsSaved}
+                                        defaultActiveTab={documents?.[0] ? 'document' : 'analysis'}
+                                    />
+                                </Suspense>
                             </TabsContent>
                         </div>
                     </div>

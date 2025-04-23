@@ -76,8 +76,8 @@ const data = {
             icon: Frame,
         },
         {
-            name: 'My Files',
-            url: '#',
+            name: 'Document Management',
+            url: '/account?tab=documents',
             icon: PieChart,
         },
         {

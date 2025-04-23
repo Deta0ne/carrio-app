@@ -63,7 +63,15 @@ export function DocumentsTab({
     const [extractedSkills, setExtractedSkills] = useState<string[] | null>(initialExtractedSkills);
     const [categorizedSkills, setCategorizedSkills] = useState<CategorizedSkills | null>(initialCategorizedSkills);
     const [isSkillsSaved, setIsSkillsSaved] = useState(initialIsSkillsSaved);
-    const [activeTab, setActiveTab] = useState<string>(defaultActiveTab);
+    const [activeTab, setActiveTab] = useState<string>(
+        document
+            ? defaultActiveTab === 'analysis'
+                ? 'analysis'
+                : 'document'
+            : categorizedSkills
+            ? 'analysis'
+            : 'document',
+    );
     const [processStatus, setProcessStatus] = useState<'idle' | 'uploading' | 'analyzing' | 'saving' | 'complete'>(
         'idle',
     );
@@ -423,7 +431,7 @@ export function DocumentsTab({
                     <div className="mb-4 p-4 border rounded-lg">
                         <div className="flex items-center justify-between mb-3">
                             <h3 className="font-medium">Profile Skills</h3>
-                            <div className="flex items-center text-sm bg-green-50 text-green-600 px-3 py-1 rounded-full border border-green-100">
+                            <div className="flex items-center text-sm bg-green-50 text-green-600 px-3 py-1 rounded-full border border-green-100 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800">
                                 <CheckCircle2 className="mr-2 h-4 w-4" />
                                 Saved to your profile
                             </div>
@@ -463,7 +471,7 @@ export function DocumentsTab({
                                     <div className="flex justify-between items-center mb-4">
                                         <h3 className="text-lg font-medium">Extracted Skills</h3>
 
-                                        <div className="flex items-center text-sm bg-green-50 text-green-600 px-3 py-1 rounded-full border border-green-100">
+                                        <div className="flex items-center text-sm bg-green-50 text-green-600 px-3 py-1 rounded-full border border-green-100 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800">
                                             <CheckCircle2 className="mr-2 h-4 w-4" />
                                             Saved to your profile
                                         </div>

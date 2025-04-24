@@ -1,4 +1,4 @@
-import { CalendarIcon, ClockIcon, MapPinIcon, BriefcaseIcon } from 'lucide-react';
+import { CalendarIcon, ClockIcon, MapPinIcon, BriefcaseIcon, InfoIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { MatchScore } from '@/components/jobs/match-score';
@@ -20,11 +20,18 @@ interface JobCardProps {
         description: string;
         matchingSkills: string[];
         missingSkills: string[];
+        preferredSkills: string[];
         status: 'active' | 'closed' | 'pending';
     };
 }
 
 export function JobCard({ job }: JobCardProps) {
+    // Combine all skills into one array
+    const allSkills = [...new Set([...job.matchingSkills, ...job.preferredSkills, ...job.missingSkills])];
+
+    // Check if a skill is in the matching skills list
+    const isMatching = (skill: string) => job.matchingSkills.includes(skill);
+
     return (
         <Card className="overflow-hidden transition-all duration-300 hover:shadow-md">
             <CardHeader className="pb-2">
@@ -82,19 +89,35 @@ export function JobCard({ job }: JobCardProps) {
 
                     <div className="space-y-2">
                         <div>
-                            <p className="text-xs font-medium mb-1">Matching Skills</p>
-                            <div className="flex flex-wrap gap-1">
-                                {job.matchingSkills.map((skill) => (
-                                    <SkillChip key={skill} skill={skill} type="matching" />
-                                ))}
+                            <div className="flex items-center mb-1">
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <InfoIcon className="h-3 w-3 text-muted-foreground cursor-help" />
+                                        </TooltipTrigger>
+                                        <TooltipContent side="right" className="max-w-xl">
+                                            <p className="text-xs">
+                                                <strong>How match score is calculated:</strong>
+                                                <br />
+                                                • Required skills: 70% weight
+                                                <br />
+                                                • Preferred skills: 30% weight
+                                                <br />
+                                                • Matching skills are shown in blue, missing skills in gray
+                                                <br />• Blue skills indicate skills present in your CV
+                                            </p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                    <p className="text-xs font-medium pl-2">Matching and Missing Skills</p>
+                                </TooltipProvider>
                             </div>
-                        </div>
-
-                        <div>
-                            <p className="text-xs font-medium mb-1">Missing Skills</p>
                             <div className="flex flex-wrap gap-1">
-                                {job.missingSkills.map((skill) => (
-                                    <SkillChip key={skill} skill={skill} type="missing" />
+                                {allSkills.map((skill) => (
+                                    <SkillChip
+                                        key={skill}
+                                        skill={skill}
+                                        type={isMatching(skill) ? 'matching' : 'missing'}
+                                    />
                                 ))}
                             </div>
                         </div>

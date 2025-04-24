@@ -33,6 +33,7 @@ export function JobMatchingCards({ jobMatches }: JobMatchingCardsProps) {
                 description: match.job_listings.description,
                 matchingSkills: matchingSkills,
                 missingSkills: match.missing_skills || [],
+                preferredSkills: match.job_listings.preferred_skills || [],
                 status: match.job_listings.status as 'active' | 'closed' | 'pending',
             };
         }),
@@ -42,9 +43,7 @@ export function JobMatchingCards({ jobMatches }: JobMatchingCardsProps) {
         return (
             <div className="text-center p-8 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800">
                 <h3 className="text-lg font-medium mb-2">No job matches found</h3>
-                <p className="text-muted-foreground">
-                    Complete your profile and add your skills to get matched with jobs!
-                </p>
+                <p className="text-muted-foreground">Complete your profile and add resume to get matched with jobs!</p>
             </div>
         );
     }

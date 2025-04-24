@@ -40,6 +40,7 @@ export interface JobCardData {
     description: string;
     matchingSkills: string[];
     missingSkills: string[];
+    preferredSkills: string[];
     status: 'active' | 'closed' | 'pending';
 }
 

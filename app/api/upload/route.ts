@@ -75,9 +75,6 @@ export async function POST(req: NextRequest) {
             // Karakter kodlama sorunlarını düzelt
             text = fixCharacterEncoding(text);
 
-            console.log("Extracted text length:", text.length);
-            console.log("First 100 characters:", text.substring(0, 100));
-            
             resolve(text.trim());
           } catch (err) {
             console.error("Error processing PDF data:", err);

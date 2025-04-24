@@ -37,7 +37,7 @@ const data = {
     navMain: [
         {
             title: 'Dashboard',
-            url: '/applications',
+            url: '/dashboard',
             icon: SquareTerminal,
             isActive: true,
         },

@@ -20,6 +20,7 @@ interface FilterBarProps {
     jobTypes: string[];
     statuses: string[];
     filteredJobs: any[];
+    experiences: string[];
 }
 
 export function FilterBar({
@@ -30,6 +31,7 @@ export function FilterBar({
     jobTypes,
     statuses,
     filteredJobs,
+    experiences,
 }: FilterBarProps) {
     const [open, setOpen] = useState(false);
 
@@ -49,12 +51,20 @@ export function FilterBar({
         }
     };
 
+    const handleExperienceChange = (experience: string, checked: boolean) => {
+        if (checked) {
+            onFilterChange({ experience: experience });
+        } else {
+            onFilterChange({ experience: '' });
+        }
+    };
     const getActiveFilterCount = () => {
         let count = 0;
         if (filters.jobType.length > 0) count++;
         if (filters.matchScore !== 'all') count++;
         if (filters.location) count++;
         if (filters.status.length > 0) count++;
+        if (filters.experience) count++;
         return count;
     };
 
@@ -126,6 +136,24 @@ export function FilterBar({
                                             <Label htmlFor="match-low">Low Match (Below 40%)</Label>
                                         </div>
                                     </RadioGroup>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <h3 className="text-sm font-medium">Experience</h3>
+                                    <div className="grid grid-cols-1 gap-2">
+                                        {experiences.map((experience) => (
+                                            <div key={experience} className="flex items-center space-x-2">
+                                                <Checkbox
+                                                    id={`experience-${experience}`}
+                                                    checked={filters.experience === experience}
+                                                    onCheckedChange={(checked) =>
+                                                        handleExperienceChange(experience, checked as boolean)
+                                                    }
+                                                />
+                                                <Label htmlFor={`experience-${experience}`}>{experience}</Label>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
 
                                 <div className="space-y-4">
@@ -259,6 +287,12 @@ export function FilterBar({
                                     <X className="h-3 w-3" />
                                     <span className="sr-only">Remove status filter</span>
                                 </button>
+                            </Badge>
+                        )}
+
+                        {filters.experience && (
+                            <Badge variant="secondary" className="gap-1">
+                                Experience: {filters.experience}
                             </Badge>
                         )}
                     </CardContent>

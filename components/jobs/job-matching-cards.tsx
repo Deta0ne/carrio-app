@@ -12,6 +12,7 @@ export type JobFilters = {
     matchScore: string;
     location: string;
     status: string[];
+    experience: string;
 };
 
 interface JobMatchingCardsProps {
@@ -53,6 +54,7 @@ export function JobMatchingCards({ jobMatches }: JobMatchingCardsProps) {
         matchScore: 'all',
         location: '',
         status: [],
+        experience: '',
     });
 
     const [currentPage, setCurrentPage] = useState(1);
@@ -61,7 +63,7 @@ export function JobMatchingCards({ jobMatches }: JobMatchingCardsProps) {
     const locations = Array.from(new Set(jobs.map((job) => job.location)));
     const jobTypes = Array.from(new Set(jobs.map((job) => job.jobType)));
     const statuses = Array.from(new Set(jobs.map((job) => job.status)));
-
+    const experiences = Array.from(new Set(jobs.map((job) => job.experience)));
     useEffect(() => {
         let result = [...jobs];
 
@@ -87,6 +89,10 @@ export function JobMatchingCards({ jobMatches }: JobMatchingCardsProps) {
             result = result.filter((job) => filters.status.includes(job.status));
         }
 
+        if (filters.experience && filters.experience !== 'all') {
+            result = result.filter((job) => job.experience === filters.experience);
+        }
+
         setFilteredJobs(result);
         setCurrentPage(1);
     }, [filters, jobs]);
@@ -101,6 +107,7 @@ export function JobMatchingCards({ jobMatches }: JobMatchingCardsProps) {
             matchScore: 'all',
             location: '',
             status: [],
+            experience: '',
         });
     };
 
@@ -134,6 +141,7 @@ export function JobMatchingCards({ jobMatches }: JobMatchingCardsProps) {
                 onFilterChange={handleFilterChange}
                 onClearFilters={clearFilters}
                 locations={locations}
+                experiences={experiences}
                 jobTypes={jobTypes}
                 statuses={statuses}
                 filteredJobs={filteredJobs}

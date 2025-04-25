@@ -4,6 +4,9 @@ import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { JobMatchingCards } from '@/components/jobs/job-matching-cards';
 import { ProfileJobMatch } from '@/types/job-matches';
+import { Badge } from '@/components/ui/badge';
+import { Database } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export const metadata: Metadata = {
     title: 'Dashboard',
@@ -21,7 +24,6 @@ export default async function DashboardPage() {
         redirect('/login');
     }
 
-    // Fetch job matches for the current user
     const { data: jobMatches, error } = await supabase
         .from('profile_job_matches')
         .select(
@@ -54,6 +56,21 @@ export default async function DashboardPage() {
         <main className="container mx-auto py-8 ">
             <div className="flex justify-between items-center mb-8">
                 <h1 className="text-3xl font-bold">Job Matches</h1>
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <div className="flex items-center gap-2">
+                                <Badge variant="outline" className="gap-1 px-1.5 py-0">
+                                    <Database className="h-3 w-3 text-yellow-500" />
+                                    <span className="text-xs">Mock Data</span>
+                                </Badge>
+                            </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Currently using mock data for development</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
             </div>
             <JobMatchingCards jobMatches={(jobMatches as ProfileJobMatch[]) || []} />
         </main>

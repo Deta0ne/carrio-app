@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
 
     // API'den dönen yanıtı işleme
     const responseText = completion.choices[0].message.content || "";
-    
+    const tokenUsage = completion.usage;
     try {
       // JSON stringi parse et
       const parsedSkills = JSON.parse(responseText);
@@ -74,7 +74,8 @@ export async function POST(req: NextRequest) {
       
       return NextResponse.json({
         skills: flatSkills,
-        categorized_skills: parsedSkills
+        categorized_skills: parsedSkills,
+        token_usage: tokenUsage
       });
     } catch (error) {
       console.error("Skills JSON parsing error:", error);

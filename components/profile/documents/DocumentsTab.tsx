@@ -26,6 +26,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getCategoryColorClass, getCategoryIcon } from '../hooks';
 import { formatFileSize, formatDate, handleDragOver } from '../utils';
 import { useRouter } from 'next/navigation';
+import { tokenLimitService } from '@/services/token-limits';
 
 interface CategorizedSkills {
     'Technical Skills': string[];
@@ -98,6 +99,31 @@ export function DocumentsTab({
     };
 
     const processCV = async (file: File) => {
+        if (!user?.id) {
+            toast.error('You must be logged in to process a CV');
+            return;
+        }
+
+        // Token limitini kontrol et
+        const tokenCheckResponse = await fetch('/api/token-limits/check', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!tokenCheckResponse.ok) {
+            toast.error('Failed to check token availability');
+            return;
+        }
+
+        const { isAvailable, remaining } = await tokenCheckResponse.json();
+
+        if (!isAvailable) {
+            toast.error(`Token limit exceeded. You have ${remaining} tokens remaining.`);
+            return;
+        }
+
         setIsProcessing(true);
         setProcessStatus('uploading');
         setProcessProgress(0);
@@ -180,6 +206,20 @@ export function DocumentsTab({
                     skillsData.categorized_skills,
                 );
 
+                // Token kullanımını API üzerinden güncelle
+                const tokenUpdateResponse = await fetch('/api/token-limits/update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        tokensUsed: skillsData.token_usage.total_tokens,
+                    }),
+                });
+                if (!tokenUpdateResponse.ok) {
+                    throw new Error('Failed to update token usage');
+                }
+
                 if (!result.success) {
                     throw new Error('Failed to save skills to profile');
                 }
@@ -191,7 +231,6 @@ export function DocumentsTab({
             clearInterval(processInterval);
             setProcessProgress(100);
             setProcessStatus('complete');
-            setActiveTab('analysis');
             toast.success('CV processed and skills saved successfully!');
             router.refresh();
             setTimeout(() => {

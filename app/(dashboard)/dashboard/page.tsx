@@ -52,6 +52,11 @@ export default async function DashboardPage() {
         console.error('Error fetching job matches:', error);
     }
 
+    const { data: applications } = await supabase
+        .from('job_applications')
+        .select('*')
+        .order('created_at', { ascending: false });
+
     return (
         <main className="container mx-auto py-8 ">
             <div className="flex justify-between items-center mb-8">
@@ -72,7 +77,7 @@ export default async function DashboardPage() {
                     </Tooltip>
                 </TooltipProvider>
             </div>
-            <JobMatchingCards jobMatches={(jobMatches as ProfileJobMatch[]) || []} />
+            <JobMatchingCards jobMatches={(jobMatches as ProfileJobMatch[]) || []} applications={applications || []} />
         </main>
     );
 }

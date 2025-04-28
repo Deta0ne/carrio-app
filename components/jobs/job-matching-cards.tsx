@@ -6,6 +6,7 @@ import { ProfileJobMatch, JobCardData } from '@/types/job-matches';
 import { formatDistanceToNow } from 'date-fns';
 import { Pagination } from '@/components/jobs/pagination';
 import { FilterBar } from '@/components/jobs/filter-bar';
+import { JobApplication } from '@/types/database';
 
 export type JobFilters = {
     jobType: string[];
@@ -17,9 +18,10 @@ export type JobFilters = {
 
 interface JobMatchingCardsProps {
     jobMatches: ProfileJobMatch[];
+    applications: JobApplication[];
 }
 
-export function JobMatchingCards({ jobMatches }: JobMatchingCardsProps) {
+export function JobMatchingCards({ jobMatches, applications }: JobMatchingCardsProps) {
     const convertedJobs: JobCardData[] = jobMatches.map((match) => {
         const matchingSkills = [
             ...(match.matched_skills?.required || []),
@@ -125,6 +127,10 @@ export function JobMatchingCards({ jobMatches }: JobMatchingCardsProps) {
         setCurrentPage(1);
     };
 
+    const isApplied = (jobId: string) => {
+        return applications.some((application) => application.id === jobId);
+    };
+
     if (jobs.length === 0) {
         return (
             <div className="text-center p-8 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800">
@@ -159,7 +165,7 @@ export function JobMatchingCards({ jobMatches }: JobMatchingCardsProps) {
                 <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {currentJobs.map((job) => (
-                            <JobCard key={job.id} job={job} />
+                            <JobCard key={job.id} job={job} isApplied={isApplied(job.id)} />
                         ))}
                     </div>
 

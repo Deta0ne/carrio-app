@@ -5,6 +5,19 @@ import { MatchScore } from '@/components/jobs/match-score';
 import { SkillChip } from '@/components/jobs/skill-chip';
 import { StatusTag } from '@/components/jobs/status-tag';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { useState } from 'react';
+import { applicationsService } from '@/services/applications-service';
+import { useRouter } from 'next/navigation';
 
 interface JobCardProps {
     job: {
@@ -23,17 +36,41 @@ interface JobCardProps {
         preferredSkills: string[];
         status: 'active' | 'closed' | 'pending';
     };
+    isApplied: boolean;
 }
 
-export function JobCard({ job }: JobCardProps) {
-    // Combine all skills into one array
+export function JobCard({ job, isApplied }: JobCardProps) {
     const allSkills = [...new Set([...job.matchingSkills, ...job.preferredSkills, ...job.missingSkills])];
+    const router = useRouter();
+    const [isAlertOpen, setIsAlertOpen] = useState(false);
 
-    // Check if a skill is in the matching skills list
     const isMatching = (skill: string) => job.matchingSkills.includes(skill);
+    const [isApplying, setIsApplying] = useState(false);
+
+    const handleApply = async () => {
+        setIsApplying(true);
+        try {
+            await applicationsService.createApplication({
+                id: job.id,
+                company_name: job.company,
+                position: job.title,
+                status: 'pending',
+                source: 'Other',
+                company_website: '',
+                application_date: new Date(),
+                interview_date: null,
+            });
+            router.refresh();
+            setTimeout(() => {
+                setIsAlertOpen(false);
+            }, 1500);
+        } catch (error) {
+            console.error('Error applying to job:', error);
+        }
+    };
 
     return (
-        <Card className="overflow-hidden transition-all duration-300 hover:shadow-md">
+        <Card className="overflow-hidden transition-all duration-300 hover:shadow-md flex flex-col h-full">
             <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">
                     <div>
@@ -43,8 +80,8 @@ export function JobCard({ job }: JobCardProps) {
                     <StatusTag status={job.status} />
                 </div>
             </CardHeader>
-            <CardContent className="pb-4">
-                <div className="flex flex-col space-y-4">
+            <CardContent className="pb-4 flex-grow">
+                <div className="flex flex-col h-full space-y-4">
                     <div className="flex justify-between items-center">
                         <div className="flex items-center text-sm text-muted-foreground">
                             <MapPinIcon className="h-4 w-4 mr-1" />
@@ -124,12 +161,37 @@ export function JobCard({ job }: JobCardProps) {
                     </div>
                 </div>
             </CardContent>
-            <CardFooter className="flex justify-between pt-0 gap-4">
-                <Button className="w-full">Apply</Button>
-                <Button variant="outline" className="w-full">
-                    See Details
+            <CardFooter className="pt-0">
+                <Button
+                    className="w-full"
+                    onClick={() => setIsAlertOpen(true)}
+                    disabled={isApplied || job.status === 'closed' || isApplying}
+                >
+                    {isApplied ? 'Applied' : job.status === 'closed' ? 'Closed' : 'Apply'}
                 </Button>
             </CardFooter>
+
+            <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            Apply to {job.title} at {job.company}?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will apply to the job and create a new application in your applications list.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleApply}
+                            disabled={isApplying || job.status === 'closed' || isApplied}
+                        >
+                            {isApplying ? 'Applying...' : 'Apply'}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </Card>
     );
 }

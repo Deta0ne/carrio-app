@@ -5,8 +5,8 @@ export async function POST(req: NextRequest) {
     try {
         const supabase = createClient();
         
-        const { data: { session } } = await (await supabase).auth.getSession();
-        if (!session) {
+        const { data: { user } } = await (await supabase).auth.getUser();
+        if (!user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
         }
 
         const { error } = await (await supabase).rpc('increment_token_usage', {
-            user_id: session.user.id,
+            user_id: user.id,
             amount: tokensUsed
         });
 

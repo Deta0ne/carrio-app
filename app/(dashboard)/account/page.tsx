@@ -90,16 +90,12 @@ export default async function Account() {
     const supabase = await createClient();
 
     const {
-        data: { session },
-    } = await supabase.auth.getSession();
-
-    if (!session) {
-        redirect('/login');
-    }
-
-    const {
         data: { user },
     } = await supabase.auth.getUser();
+
+    if (!user) {
+        redirect('/login');
+    }
 
     let verifiedDocument = null;
     if (user) {

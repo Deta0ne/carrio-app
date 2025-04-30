@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Document, uploadDocument, deleteDocument, downloadDocument } from '@/services/documents';
-import { profileService } from '@/services/profile-service';
+import {  saveProfileSkills } from '@/services/profile-service';
 import { CategorizedSkills } from '../types';
 
 export function useDocumentProcessor({
@@ -181,7 +181,7 @@ export function useDocumentProcessor({
     };
 
     const saveSkillsToProfile = async ( skillsData: any) => {
-        const result = await profileService.saveProfileSkills(
+        const result = await saveProfileSkills(
             skillsData.skills,
             skillsData.categorized_skills,
         );

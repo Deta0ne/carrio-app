@@ -5,8 +5,8 @@ export async function POST() {
     try {
         const supabase = createClient();
         
-        const { data: { session } } = await (await supabase).auth.getSession();
-        if (!session) {
+        const { data: { user } } = await (await supabase).auth.getUser()
+        if (!user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
@@ -15,7 +15,7 @@ export async function POST() {
         const { data: limits, error } = await (await supabase)
             .from('user_token_limits')
             .select('*')
-            .eq('user_id', session.user.id)
+            .eq('user_id',  user.id)
             .single();
 
         if (error) {
@@ -24,7 +24,7 @@ export async function POST() {
         }
 
         if (!limits) {
-            console.warn(`Token limit record not found: ${session.user.id}`);
+            console.warn(`Token limit record not found: ${user.id}`);
             return NextResponse.json({ isAvailable: false });
         }
 
@@ -32,7 +32,7 @@ export async function POST() {
         const isAvailable = projectedUsage <= limits.token_limit;
 
         if (!isAvailable) {
-            console.info(`User's token limit is being exceeded. User: ${session.user.id}, Remaining: ${limits.token_limit - limits.total_tokens_used}, Required: ${requiredTokens}`);
+            console.info(`User's token limit is being exceeded. User: ${user.id}, Remaining: ${limits.token_limit - limits.total_tokens_used}, Required: ${requiredTokens}`);
         }
 
         return NextResponse.json({ 

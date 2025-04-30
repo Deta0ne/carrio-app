@@ -1,4 +1,5 @@
-import { createClient } from '@/utils/supabase/client';
+"use server"
+import { createClient } from '@/utils/supabase/server';
 
 export interface Document {
     id: string;
@@ -11,7 +12,7 @@ export interface Document {
     updated_at: string;
 }
 
-const supabase = createClient();
+
 
 const sanitizeFileName = (fileName: string): string => {
     return fileName
@@ -22,7 +23,10 @@ const sanitizeFileName = (fileName: string): string => {
 };
 
 export const uploadDocument = async (file: File): Promise<Document> => {
-    const user = (await supabase.auth.getUser()).data.user;
+    const supabase = await createClient();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
     const safeFileName = sanitizeFileName(file.name);
@@ -55,6 +59,7 @@ export const uploadDocument = async (file: File): Promise<Document> => {
 };
 
 export const deleteDocument = async (document: Document) => {
+    const supabase = await createClient();
     const { error: storageError } = await supabase.storage
         .from('documents')
         .remove([document.file_path]);
@@ -70,6 +75,7 @@ export const deleteDocument = async (document: Document) => {
 };
 
 export const downloadDocument = async (document: Document): Promise<string> => {
+    const supabase = await createClient();
     const { data, error } = await supabase.storage
         .from('documents')
         .createSignedUrl(document.file_path, 60); 
@@ -79,6 +85,7 @@ export const downloadDocument = async (document: Document): Promise<string> => {
 };
 
 export const getUserDocuments = async (): Promise<Document[]> => {
+    const supabase = await createClient();
     const { data, error } = await supabase
         .from('documents')
         .select('*')

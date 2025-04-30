@@ -1,4 +1,5 @@
-import { createClient } from '@/utils/supabase/client';
+"use server"
+import { createClient } from '@/utils/supabase/server';
 
 export interface Profile {
     id: string;
@@ -13,9 +14,8 @@ export interface Profile {
     bio?: string;
 }
 
-export const profileService = {
-    async getProfile(userId: string) {
-        const supabase = createClient();
+ export const getProfile = async (userId: string) => {
+        const supabase = await createClient();
         
         const { data, error, status } = await supabase
             .from('profiles')
@@ -37,10 +37,10 @@ export const profileService = {
         }
 
         return data;
-    },
+}
 
-    async updateProfile(userId: string, profile: Partial<Profile>) {
-        const supabase = createClient();
+export const updateProfile = async (userId: string, profile: Partial<Profile>) => {
+        const supabase = await createClient();
         
         const { error } = await supabase.from('profiles').upsert({
             id: userId,
@@ -49,31 +49,12 @@ export const profileService = {
         });
 
         if (error) throw error;
-    },
+}
 
-    async uploadAvatar(userId: string, file: File, filePath: string) {
-        const supabase = createClient();
-
-        const { data, error } = await supabase.storage
-            .from('avatars')
-            .upload(filePath, file, {
-                upsert: true,
-            });
-
-        if (error) {
-            throw error;
-        }
-
-        const { data: urlData } = supabase.storage
-            .from('avatars')
-            .getPublicUrl(filePath);
-
-        return urlData.publicUrl;
-    },
-    async saveProfileSkills(
+export const saveProfileSkills = async (
         skills: string[], 
-        categorizedSkills: Record<string, string[]>) {
-        const supabase = createClient();
+        categorizedSkills: Record<string, string[]>) => {
+        const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('User not authenticated');
         const profileId = user.id;
@@ -95,12 +76,12 @@ export const profileService = {
                 console.error('Error saving profile skills:', error);
                 return { success: false, error };
             }
-    },
-    async getMatchingJobs(
+}
+export const getMatchingJobs = async (
         profileId: string, 
         options: { minScore?: number, limit?: number, offset?: number } = {}
-      ) {
-        const supabase = createClient();
+      ) => {
+        const supabase = await createClient();
         const {
           minScore = 30,
           limit = 10,
@@ -138,9 +119,10 @@ export const profileService = {
             console.error('Error fetching matching jobs:', error);
             return { success: false, error };
         }
-    },
-    async getProfileSkills(userId: string) {
-        const supabase = createClient();
+}
+
+export const getProfileSkills = async (userId: string) => {
+        const supabase = await createClient();
         
         try {
             const { data, error } = await supabase
@@ -159,5 +141,4 @@ export const profileService = {
             console.error('Error fetching profile skills:', error);
             return null;
         }
-    }
-}; 
+}

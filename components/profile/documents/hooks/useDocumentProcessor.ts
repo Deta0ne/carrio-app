@@ -1,9 +1,8 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Document, uploadDocument, deleteDocument, downloadDocument } from '@/services/documents';
 import { profileService } from '@/services/profile-service';
-import { useAuth } from '@/lib/hooks/useAuth';
 import { CategorizedSkills } from '../types';
 
 export function useDocumentProcessor({
@@ -17,7 +16,6 @@ export function useDocumentProcessor({
     initialExtractedSkills: string[] | null;
     initialIsSkillsSaved: boolean;
 }) {
-    const { user } = useAuth();
     const router = useRouter();
     const [uploadError, setUploadError] = useState<string | null>(null);
     const [document, setDocument] = useState<Document | null>(initialDocument);
@@ -59,11 +57,6 @@ export function useDocumentProcessor({
     };
 
     const handleFileUpload = async (file: File) => {
-        if (!user?.id) {
-            toast.error('You must be logged in to process a CV');
-            return;
-        }
-
         const error = validateFile(file);
         if (error) {
             setUploadError(error);
@@ -132,10 +125,8 @@ export function useDocumentProcessor({
             toast.info('Skills extracted, saving to your profile...');
 
             // 6. Save skills to profile
-            if (user?.id) {
-                await saveSkillsToProfile(user.id, skillsData);
-                setIsSkillsSaved(true);
-            }
+            await saveSkillsToProfile(skillsData);
+            setIsSkillsSaved(true);
 
             // 7. Process completed
             clearInterval(processInterval);
@@ -189,9 +180,8 @@ export function useDocumentProcessor({
         return skillsResponse.json();
     };
 
-    const saveSkillsToProfile = async (userId: string, skillsData: any) => {
+    const saveSkillsToProfile = async ( skillsData: any) => {
         const result = await profileService.saveProfileSkills(
-            userId,
             skillsData.skills,
             skillsData.categorized_skills,
         );

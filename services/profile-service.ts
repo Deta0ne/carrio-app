@@ -85,7 +85,6 @@ export const profileService = {
                   
                 if (error) throw error;
                 
-                // Uyumluluk skorlarını güncelle
                 await supabase.rpc('update_profile_job_matches', { p_profile_id: profileId });
                 
                 return { success: true };

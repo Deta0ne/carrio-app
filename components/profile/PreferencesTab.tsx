@@ -77,7 +77,6 @@ export const PreferencesTab = () => {
     const onSubmit = useCallback(async (values: PreferencesFormValues) => {
         setIsLoading(true);
         try {
-            // TODO: Implement actual API call
             console.log('Form values:', values);
             await new Promise((resolve) => setTimeout(resolve, 1000));
             toast.success('Preferences updated successfully');

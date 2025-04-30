@@ -59,17 +59,14 @@ export async function POST(req: NextRequest) {
       messages: [{ role: "user", content: prompt }],
       temperature: 0.1,
       max_tokens: 1500,
-      response_format: { type: "json_object" } // JSON formatında yanıt iste
+      response_format: { type: "json_object" }
     });
 
-    // API'den dönen yanıtı işleme
     const responseText = completion.choices[0].message.content || "";
     const tokenUsage = completion.usage;
     try {
-      // JSON stringi parse et
       const parsedSkills = JSON.parse(responseText);
       
-      // Düz beceri listesi de oluşturalım (geriye dönük uyumluluk için)
       const flatSkills = Object.values(parsedSkills).flat() as string[];
       
       return NextResponse.json({

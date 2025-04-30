@@ -5,19 +5,17 @@ import PDFParser from "pdf2json";
 import path from "path";
 import os from "os";
 
-// Karakter düzeltme yardımcı fonksiyonu
 function fixCharacterEncoding(text: string): string {
   return text
-    // PDF2JSON'in yaygın karakter sorunlarını düzelt
-    .replace(/\\|\//g, "i") // Slash ve backslash karakterlerini i olarak düzelt
-    .replace(/\#/g, "i") // # karakterini i olarak düzelt
-    .replace(/\(/g, "i") // ( karakterini i olarak düzelt
-    .replace(/\+/g, "i") // ( karakterini i olarak düzelt
-    .replace(/\>/g, "i") // > karakterini i olarak düzelt
-    .replace(/([^a-zA-Z0-9üğşçöıÜĞŞÇÖİ,.:;\s\-_'"!?@#$%^&*()+=])/g, "") // Diğer garip karakterleri temizle
-    .replace(/A([aeiıoöuü])/g, (match, vowel) => `İ${vowel}`) // A+vowel kombinasyonlarını İ+vowel yap
-    .replace(/([^\s])A([^\s])/g, (match, before, after) => `${before}İ${after}`) // A karakterini İ olarak düzelt
-    .replace(/\s{2,}/g, " ") // Birden fazla boşluğu tek boşluğa indirge
+    .replace(/\\|\//g, "i")
+    .replace(/\#/g, "i")
+    .replace(/\(/g, "i")
+    .replace(/\+/g, "i")
+    .replace(/\>/g, "i")
+    .replace(/([^a-zA-Z0-9üğşçöıÜĞŞÇÖİ,.:;\s\-_'"!?@#$%^&*()+=])/g, "")
+    .replace(/A([aeiıoöuü])/g, (match, vowel) => `İ${vowel}`)
+    .replace(/([^\s])A([^\s])/g, (match, before, after) => `${before}İ${after}`)
+    .replace(/\s{2,}/g, " ")
     .trim();
 }
 
@@ -34,16 +32,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Only PDF files are allowed" }, { status: 400 });
     }
 
-    // Generate a unique filename
     const fileName = `${uuidv4()}.pdf`;
-    // Use OS temp directory instead of /tmp
     const tempFilePath = path.join(os.tmpdir(), fileName);
 
-    // Convert File to Buffer and save
     const fileBuffer = Buffer.from(await file.arrayBuffer());
     await fs.writeFile(tempFilePath, fileBuffer);
 
-    // Parse PDF
     const pdfParser = new PDFParser();
 
     try {
@@ -55,7 +49,6 @@ export async function POST(req: NextRequest) {
 
         pdfParser.on("pdfParser_dataReady", (pdfData: any) => {
           try {
-            // Extract text from each page
             const pages = pdfData.Pages || [];
             let text = "";
 
@@ -68,11 +61,10 @@ export async function POST(req: NextRequest) {
                     text += textItem.R.map((r: any) => decodeURIComponent(r.T)).join(" ") + " ";
                   }
                 }
-                text += "\n\n"; // Add line breaks between pages
+                text += "\n\n";
               }
             }
 
-            // Karakter kodlama sorunlarını düzelt
             text = fixCharacterEncoding(text);
 
             resolve(text.trim());
@@ -85,7 +77,6 @@ export async function POST(req: NextRequest) {
         pdfParser.loadPDF(tempFilePath);
       });
 
-      // Clean up temp file
       await fs.unlink(tempFilePath).catch(console.error);
 
       if (!parsedText) {

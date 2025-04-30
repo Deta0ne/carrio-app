@@ -1,12 +1,10 @@
-// app/api/token-limits/check/route.ts
 import { createClient } from '@/utils/supabase/server';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 export async function POST() {
     try {
         const supabase = createClient();
         
-        // Kullanıcı oturumunu kontrol et
         const { data: { session } } = await (await supabase).auth.getSession();
         if (!session) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -14,7 +12,6 @@ export async function POST() {
 
         const requiredTokens = 1500
 
-        // Token limitini kontrol et
         const { data: limits, error } = await (await supabase)
             .from('user_token_limits')
             .select('*')
@@ -27,7 +24,7 @@ export async function POST() {
         }
 
         if (!limits) {
-            console.warn(`Token limit kaydı bulunamadı: ${session.user.id}`);
+            console.warn(`Token limit record not found: ${session.user.id}`);
             return NextResponse.json({ isAvailable: false });
         }
 
@@ -35,7 +32,7 @@ export async function POST() {
         const isAvailable = projectedUsage <= limits.token_limit;
 
         if (!isAvailable) {
-            console.info(`Kullanıcının token limiti aşılıyor. Kullanıcı: ${session.user.id}, Kalan: ${limits.token_limit - limits.total_tokens_used}, Gerekli: ${requiredTokens}`);
+            console.info(`User's token limit is being exceeded. User: ${session.user.id}, Remaining: ${limits.token_limit - limits.total_tokens_used}, Required: ${requiredTokens}`);
         }
 
         return NextResponse.json({ 

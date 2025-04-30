@@ -39,8 +39,6 @@ export function NavProjects({
             <SidebarGroupLabel>Extras</SidebarGroupLabel>
             <SidebarMenu>
                 {projects.map((item, index) => {
-                    // Check if current path starts with the item's href
-                    // Using startsWith to match nested routes
                     const isActive = pathname.startsWith(item.url);
 
                     return (
@@ -50,7 +48,7 @@ export function NavProjects({
                                     href={item.url}
                                     className={cn(
                                         'group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground',
-                                        isActive && 'bg-accent text-accent-foreground', // Add active styles
+                                        isActive && 'bg-accent text-accent-foreground',
                                     )}
                                 >
                                     <item.icon />

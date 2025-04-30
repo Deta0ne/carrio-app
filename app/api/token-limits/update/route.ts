@@ -1,4 +1,3 @@
-// app/api/token-limits/update/route.ts
 import { createClient } from '@/utils/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -6,7 +5,6 @@ export async function POST(req: NextRequest) {
     try {
         const supabase = createClient();
         
-        // Kullanıcı oturumunu kontrol et
         const { data: { session } } = await (await supabase).auth.getSession();
         if (!session) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -18,7 +16,6 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Invalid token usage value' }, { status: 400 });
         }
 
-        // Token kullanımını güncelle
         const { error } = await (await supabase).rpc('increment_token_usage', {
             user_id: session.user.id,
             amount: tokensUsed

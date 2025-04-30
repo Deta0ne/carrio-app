@@ -1,4 +1,3 @@
-// Main Navigation
 export { DataTable } from './data-table';
 export { DataTableRowActions } from './data-table-row-actions';
 export { DeleteApplicationDialog } from './delete-application-dialog';

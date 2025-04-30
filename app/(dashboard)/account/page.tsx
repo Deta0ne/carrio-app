@@ -12,7 +12,6 @@ import { AccountSettingsTab } from '@/components/profile/AccountSettingsTab';
 import { UserProfileSection } from '@/components/profile/ProfileTab';
 import { serverProfileService } from '@/services/server-services';
 
-// Force dynamic rendering with no cache
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
@@ -21,32 +20,26 @@ export const metadata: Metadata = {
     description: 'Account settings and preferences',
 };
 
-// Helper function to ensure data is fresh
 async function getLatestDocument(userId: string) {
     'use server';
     const supabase = await createClient();
 
-    // Clear any potentially stale data first with a direct delete of invalid entries
     try {
-        // Find documents that might be orphaned (file doesn't exist in storage)
         const { data: potentialOrphans } = await supabase
             .from('documents')
             .select('id, file_path')
             .eq('user_id', userId);
 
-        // Verify each document still exists in storage
         if (potentialOrphans && potentialOrphans.length > 0) {
             for (const doc of potentialOrphans) {
                 try {
                     const { data, error } = await supabase.storage.from('documents').download(doc.file_path);
 
                     if (error) {
-                        // File doesn't exist in storage, remove the database entry
                         console.log(`Cleaning up orphaned document: ${doc.id}`);
                         await supabase.from('documents').delete().eq('id', doc.id);
                     }
                 } catch (err) {
-                    // Error accessing storage, likely file doesn't exist
                     console.log(`Error checking document, cleaning up: ${doc.id}`);
                     await supabase.from('documents').delete().eq('id', doc.id);
                 }
@@ -56,7 +49,6 @@ async function getLatestDocument(userId: string) {
         console.error('Error cleaning up documents:', err);
     }
 
-    // Now get the latest valid document
     const { data: documents } = await supabase
         .from('documents')
         .select('*')
@@ -67,7 +59,6 @@ async function getLatestDocument(userId: string) {
     return documents?.[0] || null;
 }
 
-// Loading components for Suspense fallbacks
 function DocumentsLoading() {
     return (
         <div className="flex flex-col items-center justify-center space-y-4 py-12">
@@ -110,13 +101,11 @@ export default async function Account() {
         data: { user },
     } = await supabase.auth.getUser();
 
-    // Get guaranteed fresh document data
     let verifiedDocument = null;
     if (user) {
         verifiedDocument = await getLatestDocument(user.id);
     }
 
-    // Fetch profile skills server-side
     const profileSkills = user ? await serverProfileService.getProfileSkills(user.id) : null;
     const categorizedSkills = profileSkills?.categorized_skills || null;
     const extractedSkills = profileSkills?.skills || null;

@@ -34,16 +34,13 @@ export const serverProfileService = {
                 .single();
                 
             if (error) {
-                // If error is not found (code 406), document doesn't exist
                 if (error.code === '406') {
                     return false;
                 }
                 throw error;
             }
             
-            // If document exists in the database, also check if file exists in storage
             if (data && data.file_path) {
-                // Check if the file exists in storage
                 try {
                     const { data: fileData, error: fileError } = await supabase
                         .storage

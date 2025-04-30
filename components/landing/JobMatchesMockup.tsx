@@ -2,11 +2,10 @@
 
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button'; // Assuming Button component exists
-import { Progress } from '@/components/ui/progress'; // Assuming Progress component exists
-import { MapPin, Briefcase, Clock, Info } from 'lucide-react'; // Assuming lucide-react is installed
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { MapPin, Briefcase, Clock, Info } from 'lucide-react';
 
-// Simplified representation of job match data for mockup
 const mockJobMatches = [
     {
         title: 'Senior Frontend Developer',
@@ -34,13 +33,11 @@ const mockJobMatches = [
     },
 ];
 
-// Map status colors for badges
 const statusBadgeColors = {
     green: 'bg-green-500/20 text-green-400 border-green-500/30',
     red: 'bg-red-500/20 text-red-400 border-red-500/30',
 };
 
-// Map match percentage colors for progress bar
 const progressColors = {
     82: '[&>div]:bg-gradient-to-r [&>div]:from-emerald-400 [&>div]:to-cyan-400',
     80: '[&>div]:bg-gradient-to-r [&>div]:from-emerald-500 [&>div]:to-green-500',
@@ -52,7 +49,7 @@ export function JobMatchesMockup() {
             className="relative max-w-5xl mx-auto transition-all duration-2000 hover:scale-105"
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }} // Adjust delay as needed
+            transition={{ duration: 0.8, delay: 0.4 }}
         >
             {/* Glow and Border */}
             <div className="absolute inset-0 bg-gradient-to-r from-[#0f3443]/20 via-[#34e89e]/20 to-[#0f3443]/20 rounded-xl blur-xl opacity-80 animate-[pulse_20s_ease-in-out_infinite]"></div>

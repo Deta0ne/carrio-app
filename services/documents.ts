@@ -72,7 +72,7 @@ export const deleteDocument = async (document: Document) => {
 export const downloadDocument = async (document: Document): Promise<string> => {
     const { data, error } = await supabase.storage
         .from('documents')
-        .createSignedUrl(document.file_path, 60); // URL expires in 60 seconds
+        .createSignedUrl(document.file_path, 60); 
 
     if (error) throw error;
     return data.signedUrl;

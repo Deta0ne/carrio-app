@@ -17,7 +17,6 @@ export function useAuth() {
       }
     );
 
-    // Initial fetch
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setIsLoading(false);

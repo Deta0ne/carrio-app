@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { profileService } from '@/services/profile-service';
+import { updateProfile } from '@/services/profile-service';
 import { useUserStore } from '@/providers/store-provider';
 import Avatar from './avatar';
 import { useRouter } from 'next/navigation';
@@ -33,10 +33,10 @@ export default function AccountForm({ user }: { user: User | null }) {
         }
     }, [profile]);
 
-    async function updateProfile() {
+    async function updateProfileFunction() {
         try {
             setLoading(true);
-            await profileService.updateProfile(user?.id as string, {
+            await updateProfile(user?.id as string, {
                 email: email as string,
                 name: name as string,
                 surname: surname as string,
@@ -64,7 +64,7 @@ export default function AccountForm({ user }: { user: User | null }) {
                     size={150}
                     onUpload={(url) => {
                         setAvatarUrl(url);
-                        updateProfile();
+                        updateProfileFunction();
                     }}
                 />
                 <div className="space-y-2">
@@ -113,7 +113,7 @@ export default function AccountForm({ user }: { user: User | null }) {
                 </div>
 
                 <div className="flex flex-col gap-4">
-                    <Button onClick={updateProfile} disabled={loading}>
+                    <Button onClick={updateProfileFunction} disabled={loading}>
                         {loading ? 'Loading ...' : 'Update'}
                     </Button>
 

@@ -8,7 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Camera, Loader2, Edit, Save, AlertCircle } from 'lucide-react';
-import { profileService } from '@/services/profile-service';
+import { updateProfile } from '@/services/profile-service';
+import { uploadAvatar } from '@/services/avatar-service';
 import { useUserStore } from '@/providers/store-provider';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -106,7 +107,7 @@ export function UserProfileSection({ user }: UserProfileSectionProps) {
             try {
                 setIsSaving(true);
                 const filePath = `${user?.id}/avatar`;
-                const url = await profileService.uploadAvatar(user?.id as string, file, filePath);
+                const url = await uploadAvatar(file, filePath);
 
                 if (url) {
                     form.setValue('avatar_url', url);
@@ -157,7 +158,7 @@ export function UserProfileSection({ user }: UserProfileSectionProps) {
         try {
             const updateData = transformProfileFormValues(values, user.id);
 
-            await profileService.updateProfile(user.id, updateData);
+            await updateProfile(user.id, updateData);
 
             updateProfileInStore(updateData);
 

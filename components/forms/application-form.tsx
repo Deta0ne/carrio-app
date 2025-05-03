@@ -96,7 +96,7 @@ function mapJobToFormValues(job: JobApplication): ApplicationFormValues {
         status: job.status,
         application_date: new Date(job.application_date),
         interview_date: job.interview_date ? new Date(job.interview_date) : null,
-        source: job.source as ApplicationFormValues['source'], // Type assertion for source
+        source: job.source as ApplicationFormValues['source'],
         company_website: job.company_website || '',
     };
 }

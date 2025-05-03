@@ -53,7 +53,7 @@ export default function CTASection() {
                             viewport={{ once: true }}
                             transition={{ duration: 0.5, delay: 0.4 }}
                         >
-                            Join thousands of job seekers who have streamlined their application process with Carrio's
+                            Join hundreds of job seekers who have streamlined their application process with Carrio's
                             smart tracking system.
                         </motion.p>
 

@@ -35,6 +35,7 @@ export const applicationsService = {
                 : null;
 
             const { error } = await supabase.from('job_applications').insert({
+                id: values.id,
                 user_id: user.id,
                 company_name: values.company_name,
                 position: values.position,

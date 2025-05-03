@@ -35,7 +35,7 @@ export const registerSchema = z.object({
     .min(1, 'Password confirmation is required'),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match",
-  path: ["confirmPassword"], // Path where the error will be displayed
+  path: ["confirmPassword"], 
 })
 
 export const forgotPasswordSchema = z.object({

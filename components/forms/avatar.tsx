@@ -4,7 +4,7 @@ import { createClient } from '@/utils/supabase/client';
 import { Label } from '@/components/ui/label';
 import Image from 'next/image';
 import { useUserStore } from '@/providers/store-provider';
-import { profileService } from '@/services/profile-service';
+import { updateProfile } from '@/services/profile-service';
 
 export default function Avatar({
     uid,
@@ -19,7 +19,7 @@ export default function Avatar({
 }) {
     const supabase = createClient();
     const [uploading, setUploading] = useState(false);
-    const updateProfile = useUserStore((state) => state.updateProfile);
+    const updateProfileFunction = useUserStore((state) => state.updateProfile);
 
     const uploadAvatar: React.ChangeEventHandler<HTMLInputElement> = async (event) => {
         try {
@@ -62,11 +62,11 @@ export default function Avatar({
             const urlWithTimestamp = `${publicUrl}?t=${timestamp}`;
             onUpload(urlWithTimestamp);
 
-            await profileService.updateProfile(uid, {
+            await updateProfile(uid, {
                 avatar_url: urlWithTimestamp,
             });
 
-            updateProfile({ avatar_url: urlWithTimestamp });
+            updateProfileFunction({ avatar_url: urlWithTimestamp });
         } catch (error) {
             alert('Error uploading avatar!');
         } finally {

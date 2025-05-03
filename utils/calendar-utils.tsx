@@ -96,7 +96,6 @@ export function getStatusIconAndColor(status: string): { icon: JSX.Element; bgCo
     }
 }
 
-// Date helpers
 export function isSameDay(date1: Date, date2: Date): boolean {
     return (
         date1.getDate() === date2.getDate() &&

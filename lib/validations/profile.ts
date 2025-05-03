@@ -40,7 +40,6 @@ export const profileFormSchema = z.object({
 
 export type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
-// For API submission - transforms the form values to match the backend schema
 export const transformProfileFormValues = (values: ProfileFormValues, userId: string) => {
   return {
     id: userId,

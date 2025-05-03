@@ -1,6 +1,7 @@
 import * as z from "zod"
 
 export const applicationFormSchema = z.object({
+    id: z.string().optional(),
     company_name: z.string()
         .min(1, "Company name is required")
         .max(100, "Company name cannot exceed 100 characters"),

@@ -48,10 +48,8 @@ const JobCard = ({ job }: JobCardProps) => {
         }
     };
 
-    // Generate slug for the application
     const slug = generateSlug(job.position, job.company_name, job.id);
 
-    // Navigate to detail page
     const navigateToDetail = () => {
         router.push(`/home/${slug}?id=${job.id}`);
     };

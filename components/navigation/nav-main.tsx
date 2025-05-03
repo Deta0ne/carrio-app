@@ -39,7 +39,6 @@ export function NavMain({
             <SidebarGroupLabel>Main Menu</SidebarGroupLabel>
             <SidebarMenu>
                 {items.map((item) => {
-                    // Check if current path matches the item's href
                     const isActive = pathname === item.url;
 
                     return (
@@ -50,7 +49,7 @@ export function NavMain({
                                         href={item.url}
                                         className={cn(
                                             'group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground',
-                                            isActive && 'bg-accent text-accent-foreground', // Add active styles
+                                            isActive && 'bg-accent text-accent-foreground',
                                         )}
                                     >
                                         <item.icon className="mr-2 h-4 w-4" />
@@ -74,7 +73,7 @@ export function NavMain({
                                                                 href={subItem.url}
                                                                 className={cn(
                                                                     'group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground',
-                                                                    isActive && 'bg-accent text-accent-foreground', // Add active styles
+                                                                    isActive && 'bg-accent text-accent-foreground',
                                                                 )}
                                                             >
                                                                 <span>{subItem.title}</span>

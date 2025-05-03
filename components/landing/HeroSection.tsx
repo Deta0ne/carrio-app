@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { ArrowRight, Zap, Sparkles, Calendar, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { JobMatchesMockup } from './JobMatchesMockup';
 
 export default function HeroSection() {
     return (
@@ -46,7 +47,7 @@ export default function HeroSection() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.2 }}
                     >
-                        Track Your Career Journey with Precision
+                        Track Your Career Journey with AI Powered Job Search
                     </motion.h1>
 
                     <motion.p
@@ -101,10 +102,10 @@ export default function HeroSection() {
                         </div>
 
                         {/* Dashboard Preview */}
-                        <div className="aspect-video bg-[#030508] relative overflow-hidden">
+                        <div className="aspect-video bg-[#030508] relative overflow-hidden  rounded-xl">
                             {/* Calendar View Mockup */}
                             <div className="absolute inset-0 flex">
-                                <div className="w-[20%] border-r border-white/10 p-5">
+                                <div className="hidden sm:block w-[20%] border-r border-white/10 p-5">
                                     <div className="space-y-4">
                                         <div className="h-8 w-3/4 bg-white/5 rounded-md"></div>
                                         {[...Array(5)].map((_, i) => (
@@ -119,7 +120,7 @@ export default function HeroSection() {
                                 </div>
 
                                 <div className="flex-1 p-5">
-                                    <div className="flex justify-between items-center mb-8">
+                                    <div className="hidden sm:flex justify-between items-center mb-8">
                                         <div className="h-8 w-1/4 bg-white/5 rounded-md"></div>
                                         <div className="h-10 w-32 bg-[#34e89e]/20 rounded-md flex items-center justify-center">
                                             <div className="w-5 h-5 rounded-full bg-[#34e89e]/30 flex items-center justify-center">
@@ -194,6 +195,11 @@ export default function HeroSection() {
                     {/* Glow beneath */}
                     <div className="absolute -bottom-10 inset-x-0 h-20 bg-[#34e89e]/20 blur-3xl rounded-full"></div>
                 </motion.div>
+
+                {/* Added Mockups */}
+                <div className="mt-16 md:mt-24 space-y-16 md:space-y-24">
+                    <JobMatchesMockup />
+                </div>
             </div>
         </div>
     );

@@ -27,22 +27,45 @@ export const calculateOfferRate = (applications: JobApplications[]): number => {
  * Calculate average response time (in days) for the given applications
  */
 export const calculateAvgResponseTime = (applications: JobApplications[]): number => {
-    const appsWithResponse = applications.filter((app) => {
-        // Check if there was an update after creation
-        return new Date(app.last_update).getTime() > new Date(app.created_at).getTime();
-    });
+    // Filter for applications that have reached a definitive response stage
+    const appsWithResponse = applications.filter(app => 
+        app.status === 'rejected' || 
+        app.status === 'offer_received' || 
+        app.status === 'interview_stage'
+    );
 
     if (appsWithResponse.length === 0) return 0;
+    console.log('appsWithResponse',appsWithResponse);
+    let totalDays = 0;
+    let validResponseCount = 0;
 
-    const totalDays = appsWithResponse.reduce((sum, app) => {
-        const createdDate = new Date(app.created_at).getTime();
-        const updateDate = new Date(app.last_update).getTime();
-        const diffTime = Math.abs(updateDate - createdDate);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        return sum + diffDays;
-    }, 0);
+    appsWithResponse.forEach(app => {
+        try {
+            const appDate = new Date(app.application_date);
+            const responseDate = app.interview_date ? new Date(app.interview_date) : new Date(app.last_update);
+            
+            if (isNaN(appDate.getTime()) || isNaN(responseDate.getTime())) {
+                console.warn("Invalid date found for avg response time calculation, app:", app.id);
+                return; // Skip this application
+            }
 
-    return parseFloat((totalDays / appsWithResponse.length).toFixed(1));
+            const diffTime = responseDate.getTime() - appDate.getTime();
+            // Only consider positive time differences AND difference must be at least 1 day
+            if (diffTime >= 0) {
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                if (diffDays >= 1) { // Check if the difference is at least 1 day
+                    totalDays += diffDays;
+                    validResponseCount++;
+                }
+            }
+        } catch (error) {
+            console.error("Error processing date for avg response time calculation:", app.id, error);
+        }
+    });
+
+    if (validResponseCount === 0) return 0;
+
+    return Math.round(totalDays / validResponseCount);
 };
 
 /**

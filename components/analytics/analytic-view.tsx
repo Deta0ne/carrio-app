@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
     Calendar,
     FileText,
@@ -39,59 +39,82 @@ import { ApplicationOverview } from './application-overview';
 import { PerformanceMetrics } from './performance-metrics';
 
 export default function AnalyticView({ applications }: { applications: JobApplications[] }) {
-    const [timeRange, setTimeRange] = useState('last30Days');
-    // Calculate metrics
-    console.log('applications', applications);
-    const interviewRate = calculateInterviewRate(applications);
-    const offerRate = calculateOfferRate(applications);
-    const avgResponseTime = calculateAvgResponseTime(applications);
+    const [timeRange, setTimeRange] = useState('allTime');
 
-    // --- Calculate Overall Interview Rate Change Month-over-Month ---
-    // 1. Get the end date of last month
-    const now = new Date();
-    const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endOfLastMonth = new Date(startOfThisMonth.getTime() - 1); // Subtract 1 millisecond to get last day of previous month
+    // 1. Filter applications based on timeRange
+    const filteredApplications = useMemo(() => {
+        const now = new Date();
+        let startDate: Date | null = null;
 
-    // 2. Filter applications made up to the end of last month
-    const appsUpToLastMonth = applications.filter((app) => {
-        try {
-            const appDate = new Date(app.application_date);
-            return !isNaN(appDate.getTime()) && appDate <= endOfLastMonth;
-        } catch (e) {
-            console.error('Error parsing application_date:', app.application_date, e);
-            return false;
+        switch (timeRange) {
+            case 'last7Days':
+                startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+                break;
+            case 'last30Days':
+                startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+                break;
+            case 'last90Days':
+                startDate = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+                break;
+            case 'thisYear':
+                startDate = new Date(now.getFullYear(), 0, 1);
+                break;
+            case 'allTime':
+            default:
+                return applications; // No filtering for allTime
         }
-    });
 
-    // 3. Calculate the overall interview rate at the end of last month
-    const overallRateLastMonth = calculateInterviewRate(appsUpToLastMonth);
+        return applications.filter((app) => {
+            try {
+                const appDate = new Date(app.application_date);
+                return !isNaN(appDate.getTime()) && appDate >= startDate!;
+            } catch (e) {
+                console.error('Error parsing application_date for filtering:', app.application_date, e);
+                return false;
+            }
+        });
+    }, [applications, timeRange]);
 
-    // 4. Calculate the change between current overall rate and last month's overall rate
-    const interviewRateChange = getMonthlyChange(interviewRate, overallRateLastMonth);
+    // 2. Calculate metrics based on filtered applications
+    const displayTotalApplications = filteredApplications.length;
+    const displayInterviewRate = calculateInterviewRate(filteredApplications);
+    const displayOfferRate = calculateOfferRate(filteredApplications);
+    const displayAvgResponseTime = calculateAvgResponseTime(filteredApplications);
 
-    // 5. Calculate the overall offer rate at the end of last month
-    const overallOfferRateLastMonth = calculateOfferRate(appsUpToLastMonth);
+    // --- Calculate Month-over-Month Changes (Only for 'allTime' view) ---
+    let applicationsChange = '';
+    let interviewRateChange = '';
+    let offerRateChange = '';
 
-    // 6. Calculate the change for offer rate
-    const offerRateChange = getMonthlyChange(offerRate, overallOfferRateLastMonth);
+    if (timeRange === 'allTime') {
+        // Calculate overall rate changes vs last month
+        const now = new Date();
+        const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const endOfLastMonth = new Date(startOfThisMonth.getTime() - 1);
 
-    // 7. Calculate the overall avg response time at the end of last month
-    // const overallAvgResponseTimeLastMonth = calculateAvgResponseTime(appsUpToLastMonth); // Removed
+        const appsUpToLastMonth = applications.filter((app) => {
+            try {
+                const appDate = new Date(app.application_date);
+                return !isNaN(appDate.getTime()) && appDate <= endOfLastMonth;
+            } catch (e) {
+                console.error('Error parsing application_date:', app.application_date, e);
+                return false;
+            }
+        });
 
-    // 8. Calculate the change for avg response time
-    // const responseTimeChange = getMonthlyChange(avgResponseTime, overallAvgResponseTimeLastMonth); // Removed
-    // --- End of Overall Rate Change Calculation ---
+        const overallRateLastMonth = calculateInterviewRate(appsUpToLastMonth);
+        const overallOfferRateLastMonth = calculateOfferRate(appsUpToLastMonth);
+        // Use the originally calculated overall rates for the current period
+        const currentOverallInterviewRate = calculateInterviewRate(applications);
+        const currentOverallOfferRate = calculateOfferRate(applications);
 
-    // Calculate month-over-month changes
-    // const currentMonthApps = filterCurrentMonthApplications(applications); // No longer needed for these rate changes
-    // const prevMonthApps = filterPreviousMonthApplications(applications); // No longer needed for these rate changes
+        interviewRateChange = getMonthlyChange(currentOverallInterviewRate, overallRateLastMonth);
+        offerRateChange = getMonthlyChange(currentOverallOfferRate, overallOfferRateLastMonth);
 
-    const applicationsChange = calculateApplicationsMonthlyChange(applications);
-    // const offerRateChange = getMonthlyChange(calculateOfferRate(currentMonthApps), calculateOfferRate(prevMonthApps)); // Replaced above
-    // const responseTimeChange = getMonthlyChange( // Replaced above
-    //     calculateAvgResponseTime(currentMonthApps),
-    //     calculateAvgResponseTime(prevMonthApps),
-    // );
+        // Calculate total applications change (current month vs previous month)
+        applicationsChange = calculateApplicationsMonthlyChange(applications);
+    }
+    // --- End of Change Calculation ---
 
     return (
         <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6">
@@ -125,15 +148,18 @@ export default function AnalyticView({ applications }: { applications: JobApplic
                     </DropdownMenu>
                 </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Card className="flex-1">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Total Applications</CardTitle>
                         <Briefcase className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{applications.length}</div>
-                        <p className="text-xs text-muted-foreground">{applicationsChange} from last month</p>
+                        <div className="text-2xl font-bold">{displayTotalApplications}</div>
+                        {timeRange === 'allTime' && (
+                            <p className="text-xs text-muted-foreground">{applicationsChange} from last month</p>
+                        )}
+                        {timeRange !== 'allTime' && <p className="text-xs text-muted-foreground">&nbsp;</p>}
                     </CardContent>
                 </Card>
                 <Card className="flex-1">
@@ -142,8 +168,11 @@ export default function AnalyticView({ applications }: { applications: JobApplic
                         <Calendar className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{interviewRate}%</div>
-                        <p className="text-xs text-muted-foreground">{interviewRateChange} from last month</p>
+                        <div className="text-2xl font-bold">{displayInterviewRate}%</div>
+                        {timeRange === 'allTime' && (
+                            <p className="text-xs text-muted-foreground">{interviewRateChange} from last month</p>
+                        )}
+                        {timeRange !== 'allTime' && <p className="text-xs text-muted-foreground">&nbsp;</p>}
                     </CardContent>
                 </Card>
                 <Card className="flex-1">
@@ -152,8 +181,11 @@ export default function AnalyticView({ applications }: { applications: JobApplic
                         <PieChart className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{offerRate}%</div>
-                        <p className="text-xs text-muted-foreground">{offerRateChange} from last month</p>
+                        <div className="text-2xl font-bold">{displayOfferRate}%</div>
+                        {timeRange === 'allTime' && (
+                            <p className="text-xs text-muted-foreground">{offerRateChange} from last month</p>
+                        )}
+                        {timeRange !== 'allTime' && <p className="text-xs text-muted-foreground">&nbsp;</p>}
                     </CardContent>
                 </Card>
                 <Card className="flex-1">
@@ -162,7 +194,9 @@ export default function AnalyticView({ applications }: { applications: JobApplic
                         <Clock className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{avgResponseTime} days</div>
+                        <div className="text-2xl font-bold">
+                            {displayAvgResponseTime > 0 ? `${displayAvgResponseTime} days` : 'N/A'}
+                        </div>
                         <p className="text-xs text-muted-foreground">&nbsp;</p>
                     </CardContent>
                 </Card>

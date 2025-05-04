@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { cn } from '@/lib/utils';
@@ -7,16 +7,54 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useRouter } from 'next/navigation';
 import { resetPasswordSchema, type ResetPasswordInput } from '@/lib/validations/auth';
-import { resetPassword } from '@/app/auth/actions';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CheckCircle2 } from 'lucide-react';
+import { createClient } from '@/utils/supabase/client';
 
 export function ResetPasswordForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
     const router = useRouter();
+    const supabase = createClient();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const [isRecoverySession, setIsRecoverySession] = useState(false);
+    const [checkingSession, setCheckingSession] = useState(true);
+
+    useEffect(() => {
+        setCheckingSession(true);
+        const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'PASSWORD_RECOVERY') {
+                setIsRecoverySession(true);
+                setCheckingSession(false);
+            } else {
+                if (checkingSession) {
+                    setIsRecoverySession(false);
+                    setCheckingSession(false);
+                }
+            }
+        });
+
+        supabase.auth
+            .getSession()
+            .then(({ data }) => {
+                if (checkingSession) {
+                    if (!data.session) {
+                        setIsRecoverySession(false);
+                    }
+                    setCheckingSession(false);
+                }
+            })
+            .catch(() => {
+                if (checkingSession) {
+                    setIsRecoverySession(false);
+                    setCheckingSession(false);
+                }
+            });
+
+        return () => {
+            authListener?.subscription.unsubscribe();
+        };
+    }, [supabase.auth, checkingSession]);
 
     const form = useForm<ResetPasswordInput>({
         resolver: zodResolver(resetPasswordSchema),
@@ -27,38 +65,81 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentPropsW
     });
 
     async function onSubmit(data: ResetPasswordInput) {
+        if (!isRecoverySession) {
+            setError('Invalid or expired password reset link. Please request a new one.');
+            return;
+        }
         setError(null);
         setLoading(true);
-
         try {
-            const result = await resetPassword(data);
-            if (result.success) {
-                setIsSubmitted(true);
-                setTimeout(() => {
-                    router.push('/');
-                }, 3000);
+            const { error: updateError } = await supabase.auth.updateUser({
+                password: data.password,
+            });
+
+            if (updateError) {
+                throw updateError;
             }
-        } catch (error) {
-            setError(error instanceof Error ? error.message : 'An unexpected error occurred');
+
+            setIsSubmitted(true);
+            await supabase.auth.signOut();
+            setTimeout(() => {
+                router.push('/login?message=Password updated successfully');
+            }, 3000);
+        } catch (error: any) {
+            let errorMessage = 'An unexpected error occurred. Please try again.';
+            if (error.message) {
+                if (error.message.includes('Password should be at least 6 characters')) {
+                    errorMessage = 'Password should be at least 6 characters.';
+                } else if (error.message.includes('same password')) {
+                    errorMessage = 'New password cannot be the same as the old password.';
+                } else if (error.message.includes('weak password')) {
+                    errorMessage = 'Password is too weak. Please choose a stronger password.';
+                } else {
+                    errorMessage = `Error: ${error.message}`;
+                }
+            }
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
     }
 
+    if (checkingSession) {
+        return <div className="p-8 text-center">Verifying link...</div>;
+    }
+
     if (isSubmitted) {
         return (
             <div className="flex flex-col items-center gap-6 p-8">
-                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
-                    <CheckCircle2 className="h-10 w-10 text-green-600" />
-                </div>
                 <Alert>
                     <AlertDescription className="text-center">
                         <h3 className="mb-2 text-lg font-semibold">Password Updated!</h3>
                         <p className="text-sm text-muted-foreground">
-                            Your password has been successfully updated. Redirecting to home page...
+                            Your password has been successfully updated. Redirecting to login...
                         </p>
                     </AlertDescription>
                 </Alert>
+            </div>
+        );
+    }
+
+    if (!isRecoverySession) {
+        return (
+            <div className="flex flex-col items-center gap-6 p-8 text-center">
+                <Alert variant="destructive">
+                    <AlertDescription>
+                        <h3 className="mb-2 text-lg font-semibold">Invalid or Expired Link</h3>
+                        <p className="text-sm text-muted-foreground">
+                            This password reset link is either invalid or has expired.
+                        </p>
+                    </AlertDescription>
+                </Alert>
+                <a
+                    href="/forgot-password"
+                    className="text-primary underline underline-offset-4 hover:text-primary/90 text-sm"
+                >
+                    Request a new reset link
+                </a>
             </div>
         );
     }
@@ -98,21 +179,11 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentPropsW
                         )}
                     />
                     {error && (
-                        <div className="text-sm text-red-500 text-center">
-                            {error}
-                            {error.includes('Invalid or expired') && (
-                                <div className="mt-2">
-                                    <a
-                                        href="/forgot-password"
-                                        className="text-primary underline underline-offset-4 hover:text-primary/90"
-                                    >
-                                        Get new password reset link
-                                    </a>
-                                </div>
-                            )}
-                        </div>
+                        <Alert variant="destructive" className="text-center">
+                            <AlertDescription>{error}</AlertDescription>
+                        </Alert>
                     )}
-                    <Button type="submit" className="w-full" disabled={loading}>
+                    <Button type="submit" className="w-full" disabled={loading || !isRecoverySession}>
                         {loading ? 'Updating...' : 'Update Password'}
                     </Button>
                 </form>

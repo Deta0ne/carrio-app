@@ -60,7 +60,6 @@ const statusChartConfig = {
 export function ApplicationOverview({ applications = [] }: { applications?: JobApplications[] }) {
     const [timeRange, setTimeRange] = React.useState('90d');
 
-    // Process applications by status
     const applicationStatusData = React.useMemo(() => {
         const statusCounts = {
             planned: 0,
@@ -83,14 +82,11 @@ export function ApplicationOverview({ applications = [] }: { applications?: JobA
         }));
     }, [applications]);
 
-    // Generate trend data from actual applications
     const applicationTrendsData = React.useMemo(() => {
-        // Create a map of weeks with applied and rejected counts
         const weekMap = new Map();
 
         applications.forEach((app) => {
             const date = new Date(app.application_date);
-            // Get the week start date (Sunday)
             const weekStart = new Date(date);
             weekStart.setDate(date.getDate() - date.getDay());
             const weekKey = weekStart.toISOString().split('T')[0];
@@ -107,11 +103,9 @@ export function ApplicationOverview({ applications = [] }: { applications?: JobA
             }
         });
 
-        // Convert map to array and sort by date
         return Array.from(weekMap.values()).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     }, [applications]);
 
-    // Filter trend data based on selected time range
     const filteredTrendData = React.useMemo(() => {
         if (applicationTrendsData.length === 0) return [];
 
@@ -133,7 +127,6 @@ export function ApplicationOverview({ applications = [] }: { applications?: JobA
         });
     }, [applicationTrendsData, timeRange]);
 
-    // Calculate max Y value for domain padding
     const maxYValue = React.useMemo(() => {
         if (!filteredTrendData || filteredTrendData.length === 0) return 0;
         return Math.max(...filteredTrendData.map((item) => (item.applied || 0) + (item.rejected || 0)));

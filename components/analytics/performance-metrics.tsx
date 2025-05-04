@@ -8,25 +8,22 @@ import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '
 import { Progress } from '@/components/ui/progress';
 import { JobApplications } from '@/types/database';
 
-// Define colors for charts
 const chartColors = [
     'hsl(var(--chart-1))',
     'hsl(var(--chart-2))',
     'hsl(var(--chart-3))',
     'hsl(var(--chart-4))',
     'hsl(var(--chart-5))',
-    'hsl(var(--chart-6))', // Assuming 6 colors are defined
+    'hsl(var(--chart-6))',
 ];
 
 export function PerformanceMetrics({ applications = [] }: { applications?: JobApplications[] }) {
-    // Calculate days between application date and response/interview date
     const responseTimes = React.useMemo(() => {
         const sources = ['LinkedIn', 'Company Website', 'Indeed', 'GitHub Jobs', 'Career Website', 'Other'];
         const sourceData = sources.map((source) => {
             const sourceApps = applications.filter((app) => app.source === source);
             if (sourceApps.length === 0) return { source, days: 0, count: 0, value: 0 };
 
-            // Include apps with interview dates OR rejections
             const appsWithResponse = sourceApps.filter((app) => app.interview_date || app.status === 'rejected');
             if (appsWithResponse.length === 0) return { source, days: 0, count: 0, value: 0 };
 
@@ -36,17 +33,14 @@ export function PerformanceMetrics({ applications = [] }: { applications?: JobAp
             appsWithResponse.forEach((app) => {
                 try {
                     const appDate = new Date(app.application_date);
-                    // Use interview_date if available, otherwise use last_update for response time calculation
                     const responseDate = app.interview_date ? new Date(app.interview_date) : new Date(app.last_update);
 
-                    // Check if dates are valid
                     if (isNaN(appDate.getTime()) || isNaN(responseDate.getTime())) {
                         console.warn('Invalid date found for application:', app.id);
-                        return; // Skip this application
+                        return;
                     }
 
                     const diffTime = responseDate.getTime() - appDate.getTime();
-                    // Only consider positive time differences
                     if (diffTime >= 0) {
                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                         totalDays += diffDays;
@@ -64,11 +58,10 @@ export function PerformanceMetrics({ applications = [] }: { applications?: JobAp
                 source,
                 days: averageDays,
                 count: validResponseCount,
-                value: Math.min(100, Math.round((averageDays / 60) * 100)), // Scale to max 60 days = 100%
+                value: Math.min(100, Math.round((averageDays / 60) * 100)),
             };
         });
 
-        // Calculate overall average
         const allAppsWithResponse = applications.filter((app) => app.interview_date || app.status === 'rejected');
         let overallAverage = 0;
         let overallValue = 0;
@@ -112,7 +105,6 @@ export function PerformanceMetrics({ applications = [] }: { applications?: JobAp
         };
     }, [applications]);
 
-    // Calculate response rates by company source, assigning colors
     const responseRateData = React.useMemo(() => {
         const sources = ['LinkedIn', 'Company Website', 'Indeed', 'GitHub Jobs', 'Career Website', 'Other'];
         return sources
@@ -125,7 +117,7 @@ export function PerformanceMetrics({ applications = [] }: { applications?: JobAp
                     (app) =>
                         app.status === 'interview_stage' ||
                         app.status === 'offer_received' ||
-                        app.status === 'rejected' || // Include rejected as response
+                        app.status === 'rejected' ||
                         app.interview_date,
                 ).length;
 
@@ -133,13 +125,12 @@ export function PerformanceMetrics({ applications = [] }: { applications?: JobAp
                     source,
                     rate: Math.round((responsesCount / sourceApps.length) * 100),
                     count: sourceApps.length,
-                    fill: chartColors[index % chartColors.length], // Assign color based on index
+                    fill: chartColors[index % chartColors.length],
                 };
             })
-            .filter((item) => item.count > 0); // Keep only sources with applications
+            .filter((item) => item.count > 0);
     }, [applications]);
 
-    // Chart configs
     const responseRateConfig = {
         rate: {
             label: 'Response Rate (%)',

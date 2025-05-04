@@ -1,21 +1,9 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { saveAs } from 'file-saver'; // User needs to install: npm install file-saver @types/file-saver
-import * as XLSX from 'xlsx'; // User needs to install: npm install xlsx
-import {
-    Calendar,
-    FileText,
-    Filter,
-    Home,
-    LineChart,
-    PieChart,
-    Settings,
-    Briefcase,
-    Clock,
-    ChevronDown,
-    Search,
-} from 'lucide-react';
+import { saveAs } from 'file-saver';
+import * as XLSX from 'xlsx';
+import { Calendar, PieChart, Briefcase, Clock, ChevronDown } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,21 +22,9 @@ import {
     calculateAvgResponseTime,
     getMonthlyChange,
     calculateApplicationsMonthlyChange,
-    filterCurrentMonthApplications,
-    filterPreviousMonthApplications,
 } from './utils';
 import { ApplicationOverview } from './application-overview';
 import { PerformanceMetrics } from './performance-metrics';
-
-// Define colors for charts (used in Performance Metrics logic)
-const chartColors = [
-    'hsl(var(--chart-1))',
-    'hsl(var(--chart-2))',
-    'hsl(var(--chart-3))',
-    'hsl(var(--chart-4))',
-    'hsl(var(--chart-5))',
-    'hsl(var(--chart-6))',
-];
 
 export default function AnalyticView({ applications }: { applications: JobApplications[] }) {
     const [timeRange, setTimeRange] = useState('allTime'); // Default to allTime

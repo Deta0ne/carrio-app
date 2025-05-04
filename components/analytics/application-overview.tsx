@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { Pie, PieChart } from 'recharts';
 import { TrendingUp } from 'lucide-react';
 
@@ -133,6 +133,14 @@ export function ApplicationOverview({ applications = [] }: { applications?: JobA
         });
     }, [applicationTrendsData, timeRange]);
 
+    // Calculate max Y value for domain padding
+    const maxYValue = React.useMemo(() => {
+        if (!filteredTrendData || filteredTrendData.length === 0) return 0;
+        return Math.max(...filteredTrendData.map((item) => (item.applied || 0) + (item.rejected || 0)));
+    }, [filteredTrendData]);
+
+    const yAxisUpperBound = Math.ceil(maxYValue * 1.1);
+
     return (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <Card className="lg:col-span-2">
@@ -159,8 +167,8 @@ export function ApplicationOverview({ applications = [] }: { applications?: JobA
                     </Select>
                 </CardHeader>
                 <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-                    <ChartContainer config={trendsChartConfig} className="aspect-auto h-[250px] w-full">
-                        <AreaChart data={filteredTrendData}>
+                    <ChartContainer config={trendsChartConfig} className="aspect-auto h-[280px] w-full">
+                        <AreaChart data={filteredTrendData} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
                             <defs>
                                 <linearGradient id="fillApplied" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="5%" stopColor="var(--color-applied)" stopOpacity={0.8} />
@@ -186,6 +194,7 @@ export function ApplicationOverview({ applications = [] }: { applications?: JobA
                                     });
                                 }}
                             />
+                            <YAxis hide={true} domain={[0, yAxisUpperBound]} />
                             <ChartTooltip
                                 cursor={false}
                                 content={

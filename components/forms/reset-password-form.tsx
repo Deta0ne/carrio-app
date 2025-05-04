@@ -1,93 +1,61 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { resetPasswordSchema, type ResetPasswordInput } from '@/lib/validations/auth';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle2 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 
-export function ResetPasswordForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
+function ResetPasswordFormContent({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
     const router = useRouter();
     const supabase = createClient();
+    const searchParams = useSearchParams();
+
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isSubmitted, setIsSubmitted] = useState(false);
-    const [isRecoverySession, setIsRecoverySession] = useState(false);
-    const [checkingSession, setCheckingSession] = useState(true);
-    const recoveryEventDetected = useRef(false);
+    const [isRecoveryFlow, setIsRecoveryFlow] = useState(false);
+    const [checking, setChecking] = useState(true);
 
     useEffect(() => {
-        let isMounted = true;
-        setCheckingSession(true);
-        recoveryEventDetected.current = false;
+        const recoveryParam = searchParams.get('recovery');
 
-        const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (!isMounted) return;
-
-            console.log('Auth Event in Reset Form:', event);
-            if (event === 'PASSWORD_RECOVERY') {
-                console.log('PASSWORD_RECOVERY event handled');
-                recoveryEventDetected.current = true;
-                setIsRecoverySession(true);
-                setCheckingSession(false);
-            } else if (session && !recoveryEventDetected.current) {
-                console.log('Normal session detected, redirecting to /home');
-                router.push('/home');
-            } else if (!session) {
-                console.log('No session detected');
-                setIsRecoverySession(false);
-                setCheckingSession(false);
-            }
-        });
-
-        supabase.auth
-            .getSession()
-            .then(({ data }) => {
-                if (!isMounted) return;
-                if (checkingSession) {
-                    if (data.session && !recoveryEventDetected.current) {
-                        console.log('Initial check found normal session, redirecting');
+        if (recoveryParam === 'true') {
+            setIsRecoveryFlow(true);
+            setChecking(false);
+        } else {
+            supabase.auth
+                .getSession()
+                .then(({ data }) => {
+                    if (data.session) {
                         router.push('/home');
-                    } else if (!data.session) {
-                        console.log('Initial check found no session');
-                        setIsRecoverySession(false);
-                        setCheckingSession(false);
+                    } else {
+                        setIsRecoveryFlow(false);
                     }
-                }
-            })
-            .catch(() => {
-                if (!isMounted) return;
-                if (checkingSession) {
-                    console.log('Initial check error');
-                    setIsRecoverySession(false);
-                    setCheckingSession(false);
-                }
-            });
-
-        return () => {
-            isMounted = false;
-            console.log('Unsubscribing Auth Listener in Reset Form');
-            authListener?.subscription.unsubscribe();
-        };
-    }, [supabase, router]);
+                })
+                .catch(() => {
+                    setIsRecoveryFlow(false);
+                })
+                .finally(() => {
+                    setChecking(false);
+                });
+        }
+    }, [searchParams, supabase, router]);
 
     const form = useForm<ResetPasswordInput>({
         resolver: zodResolver(resetPasswordSchema),
-        defaultValues: {
-            password: '',
-            confirmPassword: '',
-        },
+        defaultValues: { password: '', confirmPassword: '' },
     });
 
     async function onSubmit(data: ResetPasswordInput) {
-        if (!isRecoverySession) {
-            setError('Cannot update password. Invalid or expired link.');
+        if (!isRecoveryFlow) {
+            setError('Invalid state for password reset. Please request a new link.');
             return;
         }
         setError(null);
@@ -96,7 +64,6 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentPropsW
             const { error: updateError } = await supabase.auth.updateUser({
                 password: data.password,
             });
-
             if (updateError) {
                 throw updateError;
             }
@@ -107,17 +74,14 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentPropsW
                 router.push('/login?message=Password updated successfully');
             }, 2000);
         } catch (error: any) {
-            console.error('Password reset error:', error);
-            let errorMessage = 'An unexpected error occurred. Please try again.';
+            let errorMessage = 'An unexpected error occurred.';
             if (error.message) {
                 if (error.message.includes('Password should be at least 6 characters')) {
                     errorMessage = 'Password should be at least 6 characters.';
-                } else if (error.message.includes('same password')) {
+                } else if (error.message.includes('same password') || error.code === 'same_password') {
                     errorMessage = 'New password cannot be the same as the old password.';
                 } else if (error.message.includes('weak password')) {
                     errorMessage = 'Password is too weak. Please choose a stronger password.';
-                } else if (error.code === 'same_password') {
-                    errorMessage = 'New password cannot be the same as the old password.';
                 } else {
                     errorMessage = `Error: ${error.message}`;
                 }
@@ -128,8 +92,8 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentPropsW
         }
     }
 
-    if (checkingSession) {
-        return <div className="p-8 text-center">Verifying link...</div>;
+    if (checking) {
+        return <div className="p-8 text-center">Verifying...</div>;
     }
 
     if (isSubmitted) {
@@ -150,14 +114,14 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentPropsW
         );
     }
 
-    if (!isRecoverySession) {
+    if (!isRecoveryFlow) {
         return (
             <div className="flex flex-col items-center gap-6 p-8 text-center">
                 <Alert variant="destructive">
                     <AlertDescription>
                         <h3 className="mb-2 text-lg font-semibold">Invalid or Expired Link</h3>
                         <p className="text-sm text-muted-foreground">
-                            This password reset link is either invalid or has expired.
+                            This password reset link is either invalid or has expired. Please request a new one.
                         </p>
                     </AlertDescription>
                 </Alert>
@@ -216,5 +180,13 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentPropsW
                 </form>
             </Form>
         </div>
+    );
+}
+
+export function ResetPasswordForm(props: React.ComponentPropsWithoutRef<'div'>) {
+    return (
+        <Suspense fallback={<div className="p-8 text-center">Loading Reset Form...</div>}>
+            <ResetPasswordFormContent {...props} />
+        </Suspense>
     );
 }

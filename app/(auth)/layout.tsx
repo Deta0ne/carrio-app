@@ -2,15 +2,17 @@ import { GalleryVerticalEnd } from 'lucide-react';
 import Image from 'next/image';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
+import { headers } from 'next/headers';
 
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
     const supabase = await createClient();
+    const pathname = (await headers()).get('next-url');
 
     const {
         data: { user },
     } = await supabase.auth.getUser();
 
-    if (user) {
+    if (user && pathname !== '/reset') {
         redirect('/home');
     }
 

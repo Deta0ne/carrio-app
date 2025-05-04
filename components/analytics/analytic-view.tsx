@@ -35,7 +35,7 @@ import {
     filterCurrentMonthApplications,
     filterPreviousMonthApplications,
 } from './utils';
-
+import { ApplicationOverview } from './application-overview';
 export default function AnalyticView({ applications }: { applications: JobApplications[] }) {
     const [timeRange, setTimeRange] = useState('last30Days');
     console.log(applications);
@@ -142,7 +142,7 @@ export default function AnalyticView({ applications }: { applications: JobApplic
                     <TabsTrigger value="documents">Document Effectiveness</TabsTrigger>
                 </TabsList>
                 <TabsContent value="overview" className="space-y-4">
-                    sad
+                    <ApplicationOverview applications={applications} />
                 </TabsContent>
                 <TabsContent value="interviews" className="space-y-4">
                     dat

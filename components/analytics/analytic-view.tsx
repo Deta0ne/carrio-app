@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { saveAs } from 'file-saver'; // User needs to install: npm install file-saver @types/file-saver
+import * as XLSX from 'xlsx'; // User needs to install: npm install xlsx
 import {
     Calendar,
     FileText,
@@ -38,11 +40,33 @@ import {
 import { ApplicationOverview } from './application-overview';
 import { PerformanceMetrics } from './performance-metrics';
 
+// Define colors for charts (used in Performance Metrics logic)
+const chartColors = [
+    'hsl(var(--chart-1))',
+    'hsl(var(--chart-2))',
+    'hsl(var(--chart-3))',
+    'hsl(var(--chart-4))',
+    'hsl(var(--chart-5))',
+    'hsl(var(--chart-6))',
+];
+
 export default function AnalyticView({ applications }: { applications: JobApplications[] }) {
-    const [timeRange, setTimeRange] = useState('allTime');
+    const [timeRange, setTimeRange] = useState('allTime'); // Default to allTime
 
     // 1. Filter applications based on timeRange
     const filteredApplications = useMemo(() => {
+        if (timeRange === 'allTime') {
+            // For allTime, just return all applications (consider filtering invalid dates if necessary)
+            return applications.filter((app) => {
+                try {
+                    const appDate = new Date(app.application_date);
+                    return !isNaN(appDate.getTime());
+                } catch (e) {
+                    return false;
+                }
+            });
+        }
+
         const now = new Date();
         let startDate: Date | null = null;
 
@@ -51,19 +75,25 @@ export default function AnalyticView({ applications }: { applications: JobApplic
                 startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
                 break;
             case 'last30Days':
-                startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+                startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30); // Corrected logic
                 break;
             case 'last90Days':
-                startDate = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+                startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 90); // Corrected logic
                 break;
             case 'thisYear':
                 startDate = new Date(now.getFullYear(), 0, 1);
                 break;
-            case 'allTime':
             default:
-                return applications; // No filtering for allTime
+                return applications; // Should not happen, but fallback
         }
 
+        // Ensure startDate is valid before filtering
+        if (!startDate || isNaN(startDate.getTime())) {
+            console.error('Invalid start date generated for time range:', timeRange);
+            return []; // Return empty if start date is invalid
+        }
+
+        // Now filter based on the calculated startDate
         return applications.filter((app) => {
             try {
                 const appDate = new Date(app.application_date);
@@ -82,16 +112,13 @@ export default function AnalyticView({ applications }: { applications: JobApplic
     const displayAvgResponseTime = calculateAvgResponseTime(filteredApplications);
 
     // --- Calculate Month-over-Month Changes (Only for 'allTime' view) ---
-    let applicationsChange = '';
-    let interviewRateChange = '';
-    let offerRateChange = '';
-
-    if (timeRange === 'allTime') {
-        // Calculate overall rate changes vs last month
+    const { applicationsChange, interviewRateChange, offerRateChange } = useMemo(() => {
+        if (timeRange !== 'allTime') {
+            return { applicationsChange: '', interviewRateChange: '', offerRateChange: '' };
+        }
         const now = new Date();
         const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
         const endOfLastMonth = new Date(startOfThisMonth.getTime() - 1);
-
         const appsUpToLastMonth = applications.filter((app) => {
             try {
                 const appDate = new Date(app.application_date);
@@ -102,19 +129,180 @@ export default function AnalyticView({ applications }: { applications: JobApplic
             }
         });
 
-        const overallRateLastMonth = calculateInterviewRate(appsUpToLastMonth);
-        const overallOfferRateLastMonth = calculateOfferRate(appsUpToLastMonth);
-        // Use the originally calculated overall rates for the current period
         const currentOverallInterviewRate = calculateInterviewRate(applications);
         const currentOverallOfferRate = calculateOfferRate(applications);
+        const overallRateLastMonth = calculateInterviewRate(appsUpToLastMonth);
+        const overallOfferRateLastMonth = calculateOfferRate(appsUpToLastMonth);
 
-        interviewRateChange = getMonthlyChange(currentOverallInterviewRate, overallRateLastMonth);
-        offerRateChange = getMonthlyChange(currentOverallOfferRate, overallOfferRateLastMonth);
+        return {
+            applicationsChange: calculateApplicationsMonthlyChange(applications),
+            interviewRateChange: getMonthlyChange(currentOverallInterviewRate, overallRateLastMonth),
+            offerRateChange: getMonthlyChange(currentOverallOfferRate, overallOfferRateLastMonth),
+        };
+    }, [applications, timeRange]);
 
-        // Calculate total applications change (current month vs previous month)
-        applicationsChange = calculateApplicationsMonthlyChange(applications);
-    }
-    // --- End of Change Calculation ---
+    // --- Export Functions ---
+    const handleExport = (format: 'csv' | 'excel') => {
+        // Recalculate all necessary stats using the full dataset (`applications`)
+        // These calculations mirror the logic in child components but use the full dataset for export
+
+        // 1. Summary Stats (for both CSV and Excel)
+        const summaryStats = {
+            Metric: 'Value',
+            'Total Applications': applications.length,
+            'Interview Rate (%)': calculateInterviewRate(applications),
+            'Offer Rate (%)': calculateOfferRate(applications),
+            'Avg. Response Time (days)': calculateAvgResponseTime(applications),
+            '---': '---', // Separator
+            'Total Apps Change (vs last month)': applicationsChange,
+            'Interview Rate Change (vs last month)': interviewRateChange,
+            'Offer Rate Change (vs last month)': offerRateChange,
+        };
+        const summaryDataForSheet = Object.entries(summaryStats).map(([Metric, Value]) => ({ Metric, Value }));
+
+        if (format === 'csv') {
+            try {
+                // Calculate source response rates for CSV as well
+                const sources = ['LinkedIn', 'Company Website', 'Indeed', 'GitHub Jobs', 'Career Website', 'Other'];
+                const responseRateData = sources
+                    .map((source) => {
+                        const sourceApps = applications.filter((app) => app.source === source);
+                        if (sourceApps.length === 0) return null;
+                        const responsesCount = sourceApps.filter(
+                            (app) =>
+                                app.status === 'interview_stage' ||
+                                app.status === 'offer_received' ||
+                                app.status === 'rejected' ||
+                                app.interview_date,
+                        ).length;
+                        return {
+                            Source: source,
+                            'Response Rate (%)': Math.round((responsesCount / sourceApps.length) * 100),
+                            'Total Applications': sourceApps.length,
+                        };
+                    })
+                    .filter((item) => item !== null);
+
+                // Convert both data sets to sheets
+                const wsSummary = XLSX.utils.json_to_sheet(summaryDataForSheet, { skipHeader: true });
+                const wsResponseRate = XLSX.utils.json_to_sheet(responseRateData);
+
+                // Convert sheets to CSV strings
+                const csvSummary = XLSX.utils.sheet_to_csv(wsSummary);
+                const csvResponseRate = XLSX.utils.sheet_to_csv(wsResponseRate);
+
+                // Combine CSV strings with a separator
+                const combinedCsv = `${csvSummary}\n\n${csvResponseRate}`;
+
+                const blob = new Blob([combinedCsv], { type: 'text/csv;charset=utf-8;' });
+                saveAs(blob, `analytics-summary-and-rates-allTime.csv`);
+            } catch (error) {
+                console.error('Error exporting Combined CSV:', error);
+                alert('Failed to export Combined CSV.');
+            }
+            return; // Stop here for CSV
+        }
+
+        // 2. Performance Metrics Data (for Excel)
+        const sources = ['LinkedIn', 'Company Website', 'Indeed', 'GitHub Jobs', 'Career Website', 'Other'];
+
+        // Response Rates by Source
+        const responseRateData = sources
+            .map((source, index) => {
+                const sourceApps = applications.filter((app) => app.source === source);
+                if (sourceApps.length === 0) return null; // Skip if no apps for this source
+                const responsesCount = sourceApps.filter(
+                    (app) =>
+                        app.status === 'interview_stage' ||
+                        app.status === 'offer_received' ||
+                        app.status === 'rejected' ||
+                        app.interview_date,
+                ).length;
+                return {
+                    Source: source,
+                    'Response Rate (%)': Math.round((responsesCount / sourceApps.length) * 100),
+                    'Total Applications': sourceApps.length,
+                };
+            })
+            .filter((item) => item !== null); // Remove null entries
+
+        // Avg Response Times by Source
+        const responseTimesData = sources
+            .map((source) => {
+                const sourceApps = applications.filter((app) => app.source === source);
+                if (sourceApps.length === 0) return null;
+                const appsWithResponse = sourceApps.filter((app) => app.interview_date || app.status === 'rejected');
+                if (appsWithResponse.length === 0)
+                    return { Source: source, 'Avg Response Time (days)': 'N/A', 'Responded Count': 0 };
+                let totalDays = 0,
+                    validResponseCount = 0;
+                appsWithResponse.forEach((app) => {
+                    try {
+                        const appDate = new Date(app.application_date);
+                        const responseDate = app.interview_date
+                            ? new Date(app.interview_date)
+                            : new Date(app.last_update);
+                        if (isNaN(appDate.getTime()) || isNaN(responseDate.getTime())) return;
+                        const diffTime = responseDate.getTime() - appDate.getTime();
+                        if (diffTime >= 0) {
+                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                            if (diffDays >= 1) {
+                                totalDays += diffDays;
+                                validResponseCount++;
+                            }
+                        }
+                    } catch (e) {}
+                });
+                const averageDays = validResponseCount > 0 ? Math.round(totalDays / validResponseCount) : 0;
+                return {
+                    Source: source,
+                    'Avg Response Time (days)': averageDays > 0 ? averageDays : 'N/A',
+                    'Responded Count': validResponseCount,
+                };
+            })
+            .filter((item) => item !== null);
+
+        // 3. Application Status Data (for Excel)
+        const statusCounts = {
+            planned: 0,
+            pending: 0,
+            interview_stage: 0,
+            offer_received: 0,
+            rejected: 0,
+        };
+        applications.forEach((app) => {
+            if (statusCounts[app.status] !== undefined) {
+                statusCounts[app.status]++;
+            }
+        });
+        const applicationStatusData = Object.entries(statusCounts).map(([Status, Count]) => ({ Status, Count }));
+
+        // 4. Create Excel Workbook
+        if (format === 'excel') {
+            try {
+                const wb = XLSX.utils.book_new();
+                const wsSummary = XLSX.utils.json_to_sheet(summaryDataForSheet);
+                const wsResponseRate = XLSX.utils.json_to_sheet(responseRateData);
+                const wsResponseTime = XLSX.utils.json_to_sheet(responseTimesData);
+                const wsStatus = XLSX.utils.json_to_sheet(applicationStatusData);
+
+                XLSX.utils.book_append_sheet(wb, wsSummary, 'Overall Summary');
+                XLSX.utils.book_append_sheet(wb, wsResponseRate, 'Response Rate by Source');
+                XLSX.utils.book_append_sheet(wb, wsResponseTime, 'Avg Response Time by Source');
+                XLSX.utils.book_append_sheet(wb, wsStatus, 'Applications by Status');
+
+                const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+                const blob = new Blob([excelBuffer], {
+                    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8',
+                });
+                saveAs(blob, `analytics-all-stats-allTime.xlsx`);
+            } catch (error) {
+                console.error('Error exporting Excel:', error);
+                alert('Failed to export Excel.');
+            }
+        }
+    };
+    // --- End Export Functions ---
 
     return (
         <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6">
@@ -141,9 +329,12 @@ export default function AnalyticView({ applications }: { applications: JobApplic
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuItem>Export as PDF</DropdownMenuItem>
-                            <DropdownMenuItem>Export as CSV</DropdownMenuItem>
-                            <DropdownMenuItem>Schedule Reports</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => handleExport('csv')}>
+                                Export Summary & Rates as CSV
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => handleExport('excel')}>
+                                Export All Stats as Excel
+                            </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
@@ -207,11 +398,11 @@ export default function AnalyticView({ applications }: { applications: JobApplic
                     <TabsTrigger value="performance">Performance Metrics</TabsTrigger>
                 </TabsList>
                 <TabsContent value="overview" className="space-y-4">
-                    <ApplicationOverview applications={applications} />
+                    <ApplicationOverview applications={filteredApplications} />
                 </TabsContent>
 
                 <TabsContent value="performance" className="space-y-4">
-                    <PerformanceMetrics applications={applications} />
+                    <PerformanceMetrics applications={filteredApplications} />
                 </TabsContent>
             </Tabs>
         </main>

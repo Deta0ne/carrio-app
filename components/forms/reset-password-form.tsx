@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { cn } from '@/lib/utils';
@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { resetPasswordSchema, type ResetPasswordInput } from '@/lib/validations/auth';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { CheckCircle2 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 
 export function ResetPasswordForm({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
@@ -19,42 +20,62 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentPropsW
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [isRecoverySession, setIsRecoverySession] = useState(false);
     const [checkingSession, setCheckingSession] = useState(true);
+    const recoveryEventDetected = useRef(false);
 
     useEffect(() => {
+        let isMounted = true;
         setCheckingSession(true);
-        const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+        recoveryEventDetected.current = false;
+
+        const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (!isMounted) return;
+
+            console.log('Auth Event in Reset Form:', event);
             if (event === 'PASSWORD_RECOVERY') {
+                console.log('PASSWORD_RECOVERY event handled');
+                recoveryEventDetected.current = true;
                 setIsRecoverySession(true);
                 setCheckingSession(false);
-            } else {
-                if (checkingSession) {
-                    setIsRecoverySession(false);
-                    setCheckingSession(false);
-                }
+            } else if (session && !recoveryEventDetected.current) {
+                console.log('Normal session detected, redirecting to /home');
+                router.push('/home');
+            } else if (!session) {
+                console.log('No session detected');
+                setIsRecoverySession(false);
+                setCheckingSession(false);
             }
         });
 
         supabase.auth
             .getSession()
             .then(({ data }) => {
+                if (!isMounted) return;
                 if (checkingSession) {
-                    if (!data.session) {
+                    if (data.session && !recoveryEventDetected.current) {
+                        console.log('Initial check found normal session, redirecting');
+                        router.push('/home');
+                    } else if (!data.session) {
+                        console.log('Initial check found no session');
                         setIsRecoverySession(false);
+                        setCheckingSession(false);
                     }
-                    setCheckingSession(false);
                 }
             })
             .catch(() => {
+                if (!isMounted) return;
                 if (checkingSession) {
+                    console.log('Initial check error');
                     setIsRecoverySession(false);
                     setCheckingSession(false);
                 }
             });
 
         return () => {
+            isMounted = false;
+            console.log('Unsubscribing Auth Listener in Reset Form');
             authListener?.subscription.unsubscribe();
         };
-    }, [supabase.auth, checkingSession]);
+    }, [supabase, router]);
 
     const form = useForm<ResetPasswordInput>({
         resolver: zodResolver(resetPasswordSchema),
@@ -66,7 +87,7 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentPropsW
 
     async function onSubmit(data: ResetPasswordInput) {
         if (!isRecoverySession) {
-            setError('Invalid or expired password reset link. Please request a new one.');
+            setError('Cannot update password. Invalid or expired link.');
             return;
         }
         setError(null);
@@ -84,8 +105,9 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentPropsW
             await supabase.auth.signOut();
             setTimeout(() => {
                 router.push('/login?message=Password updated successfully');
-            }, 3000);
+            }, 2000);
         } catch (error: any) {
+            console.error('Password reset error:', error);
             let errorMessage = 'An unexpected error occurred. Please try again.';
             if (error.message) {
                 if (error.message.includes('Password should be at least 6 characters')) {
@@ -94,6 +116,8 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentPropsW
                     errorMessage = 'New password cannot be the same as the old password.';
                 } else if (error.message.includes('weak password')) {
                     errorMessage = 'Password is too weak. Please choose a stronger password.';
+                } else if (error.code === 'same_password') {
+                    errorMessage = 'New password cannot be the same as the old password.';
                 } else {
                     errorMessage = `Error: ${error.message}`;
                 }
@@ -111,6 +135,9 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentPropsW
     if (isSubmitted) {
         return (
             <div className="flex flex-col items-center gap-6 p-8">
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
+                    <CheckCircle2 className="h-10 w-10 text-green-600" />
+                </div>
                 <Alert>
                     <AlertDescription className="text-center">
                         <h3 className="mb-2 text-lg font-semibold">Password Updated!</h3>
@@ -183,7 +210,7 @@ export function ResetPasswordForm({ className, ...props }: React.ComponentPropsW
                             <AlertDescription>{error}</AlertDescription>
                         </Alert>
                     )}
-                    <Button type="submit" className="w-full" disabled={loading || !isRecoverySession}>
+                    <Button type="submit" className="w-full" disabled={loading}>
                         {loading ? 'Updating...' : 'Update Password'}
                     </Button>
                 </form>

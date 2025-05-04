@@ -5,17 +5,6 @@ import { createClient } from '@/utils/supabase/server';
 import { headers } from 'next/headers';
 
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
-    const supabase = await createClient();
-    const pathname = (await headers()).get('next-url');
-
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-
-    if (user && pathname !== '/reset') {
-        redirect('/home');
-    }
-
     return (
         <div className="grid min-h-svh lg:grid-cols-2">
             <div className="flex flex-col gap-4 p-6 md:p-10">

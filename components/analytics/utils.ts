@@ -8,7 +8,7 @@ export const calculateInterviewRate = (applications: JobApplications[]): number 
     const interviewCount = applications.filter(
         (app) => app.status === 'interview_stage' || app.interview_date !== null,
     ).length;
-
+    console.log('interviewCount',applications);
     return applications.length > 0 ? Math.round((interviewCount / applications.length) * 100) : 0;
 };
 
@@ -35,7 +35,6 @@ export const calculateAvgResponseTime = (applications: JobApplications[]): numbe
     );
 
     if (appsWithResponse.length === 0) return 0;
-    console.log('appsWithResponse',appsWithResponse);
     let totalDays = 0;
     let validResponseCount = 0;
 
@@ -45,7 +44,6 @@ export const calculateAvgResponseTime = (applications: JobApplications[]): numbe
             const responseDate = app.interview_date ? new Date(app.interview_date) : new Date(app.last_update);
             
             if (isNaN(appDate.getTime()) || isNaN(responseDate.getTime())) {
-                console.warn("Invalid date found for avg response time calculation, app:", app.id);
                 return; // Skip this application
             }
 
@@ -117,6 +115,5 @@ export const filterPreviousMonthApplications = (applications: JobApplications[])
 export const calculateApplicationsMonthlyChange = (applications: JobApplications[]): string => {
     const currentMonth = filterCurrentMonthApplications(applications);
     const previousMonth = filterPreviousMonthApplications(applications);
-    console.log(currentMonth.length, previousMonth.length);
     return getMonthlyChange(currentMonth.length, previousMonth.length);
 };

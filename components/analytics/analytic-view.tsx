@@ -40,26 +40,58 @@ import { PerformanceMetrics } from './performance-metrics';
 
 export default function AnalyticView({ applications }: { applications: JobApplications[] }) {
     const [timeRange, setTimeRange] = useState('last30Days');
-    console.log(applications);
     // Calculate metrics
+    console.log('applications', applications);
     const interviewRate = calculateInterviewRate(applications);
     const offerRate = calculateOfferRate(applications);
     const avgResponseTime = calculateAvgResponseTime(applications);
 
+    // --- Calculate Overall Interview Rate Change Month-over-Month ---
+    // 1. Get the end date of last month
+    const now = new Date();
+    const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfLastMonth = new Date(startOfThisMonth.getTime() - 1); // Subtract 1 millisecond to get last day of previous month
+
+    // 2. Filter applications made up to the end of last month
+    const appsUpToLastMonth = applications.filter((app) => {
+        try {
+            const appDate = new Date(app.application_date);
+            return !isNaN(appDate.getTime()) && appDate <= endOfLastMonth;
+        } catch (e) {
+            console.error('Error parsing application_date:', app.application_date, e);
+            return false;
+        }
+    });
+
+    // 3. Calculate the overall interview rate at the end of last month
+    const overallRateLastMonth = calculateInterviewRate(appsUpToLastMonth);
+
+    // 4. Calculate the change between current overall rate and last month's overall rate
+    const interviewRateChange = getMonthlyChange(interviewRate, overallRateLastMonth);
+
+    // 5. Calculate the overall offer rate at the end of last month
+    const overallOfferRateLastMonth = calculateOfferRate(appsUpToLastMonth);
+
+    // 6. Calculate the change for offer rate
+    const offerRateChange = getMonthlyChange(offerRate, overallOfferRateLastMonth);
+
+    // 7. Calculate the overall avg response time at the end of last month
+    // const overallAvgResponseTimeLastMonth = calculateAvgResponseTime(appsUpToLastMonth); // Removed
+
+    // 8. Calculate the change for avg response time
+    // const responseTimeChange = getMonthlyChange(avgResponseTime, overallAvgResponseTimeLastMonth); // Removed
+    // --- End of Overall Rate Change Calculation ---
+
     // Calculate month-over-month changes
-    const currentMonthApps = filterCurrentMonthApplications(applications);
-    const prevMonthApps = filterPreviousMonthApplications(applications);
+    // const currentMonthApps = filterCurrentMonthApplications(applications); // No longer needed for these rate changes
+    // const prevMonthApps = filterPreviousMonthApplications(applications); // No longer needed for these rate changes
 
     const applicationsChange = calculateApplicationsMonthlyChange(applications);
-    const interviewRateChange = getMonthlyChange(
-        calculateInterviewRate(currentMonthApps),
-        calculateInterviewRate(prevMonthApps),
-    );
-    const offerRateChange = getMonthlyChange(calculateOfferRate(currentMonthApps), calculateOfferRate(prevMonthApps));
-    const responseTimeChange = getMonthlyChange(
-        calculateAvgResponseTime(currentMonthApps),
-        calculateAvgResponseTime(prevMonthApps),
-    );
+    // const offerRateChange = getMonthlyChange(calculateOfferRate(currentMonthApps), calculateOfferRate(prevMonthApps)); // Replaced above
+    // const responseTimeChange = getMonthlyChange( // Replaced above
+    //     calculateAvgResponseTime(currentMonthApps),
+    //     calculateAvgResponseTime(prevMonthApps),
+    // );
 
     return (
         <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6">
@@ -131,7 +163,7 @@ export default function AnalyticView({ applications }: { applications: JobApplic
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{avgResponseTime} days</div>
-                        <p className="text-xs text-muted-foreground">{responseTimeChange} from last month</p>
+                        <p className="text-xs text-muted-foreground">&nbsp;</p>
                     </CardContent>
                 </Card>
             </div>

@@ -65,7 +65,7 @@ const data = {
         },
         {
             title: 'Support and Feedback',
-            url: '#',
+            url: '/support',
             icon: Send,
         },
     ],

@@ -56,7 +56,7 @@ export default function Home() {
                             { name: 'Features', href: '#features' },
                             { name: 'Pricing', href: '#cta-section' },
                             { name: 'Users', href: '#users' },
-                            { name: 'Contact', href: '#contact' },
+                            { name: 'Contact', href: '/support' },
                         ].map((item, index) => (
                             <Link
                                 key={index}

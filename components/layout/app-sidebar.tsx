@@ -58,33 +58,38 @@ const data = {
         },
     ],
     navSecondary: [
-        {
-            title: 'Settings',
-            url: '#',
-            icon: Settings2,
-        },
-        {
-            title: 'Support and Feedback',
-            url: '/support',
-            icon: Send,
-        },
+        // {
+        //     title: 'Settings',
+        //     url: '#',
+        //     icon: Settings2,
+        // },
+        // {
+        //     title: 'Support and Feedback',
+        //     url: '/support',
+        //     icon: Send,
+        // },
     ],
     projects: [
-        {
-            name: 'Campanies',
-            url: '#',
-            icon: Frame,
-        },
+        // {
+        //     name: 'Campanies',
+        //     url: '#',
+        //     icon: Frame,
+        // },
         {
             name: 'Document Management',
             url: '/account?tab=documents',
             icon: PieChart,
         },
         {
-            name: 'Email Templates',
-            url: '#',
-            icon: Map,
+            name: 'Support and Feedback',
+            url: '/support',
+            icon: Send,
         },
+        // {
+        //     name: 'Email Templates',
+        //     url: '#',
+        //     icon: Map,
+        // },
     ],
 };
 
@@ -121,12 +126,14 @@ export function AppSidebar({ initialUser, initialProfile, ...props }: AppSidebar
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
                             <a href="/home">
-                                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                                    <Command className="size-4" />
+                                <div className="flex items-center space-x-2">
+                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#34e89e] to-[#0f3443] flex items-center justify-center">
+                                        <span className="text-lg font-bold text-white">C</span>
+                                    </div>
                                 </div>
                                 <div className="grid flex-1 text-left text-sm leading-tight">
                                     <span className="truncate font-semibold">Carrio</span>
-                                    <span className="truncate text-xs">Enterprise</span>
+                                    <span className="truncate text-xs">Demo</span>
                                 </div>
                             </a>
                         </SidebarMenuButton>

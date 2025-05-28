@@ -40,16 +40,16 @@ export function DocumentViewer({ document, isSkillsSaved, onDelete, onDownload, 
     };
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-4 w-full">
             <input type="file" ref={fileInputRef} className="hidden" accept=".pdf" onChange={handleFileChange} />
-            <div className="flex items-start space-x-4 p-4 border rounded-lg bg-muted/30">
+            <div className="flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-4 p-4 border rounded-lg bg-muted/30">
                 <div className="rounded-full bg-primary/10 p-2 flex-shrink-0">
                     <FileText className="h-5 w-5 text-primary" />
                 </div>
 
-                <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                        <h3 className="font-medium truncate">{document.name}</h3>
+                <div className="flex-1 min-w-0 w-full">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-2 sm:space-y-0">
+                        <h3 className="font-medium truncate max-w-[200px] sm:max-w-[300px]">{document.name}</h3>
                         <div className="flex items-center space-x-2">
                             <Button
                                 variant="ghost"
@@ -92,15 +92,12 @@ export function DocumentViewer({ document, isSkillsSaved, onDelete, onDownload, 
                         </div>
                     </div>
 
-                    <div className="mt-1 flex items-center text-sm text-muted-foreground">
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                         <span>{document.type}</span>
-                        <span className="mx-2">•</span>
                         <span>{formatFileSize(document.size)}</span>
-                        <span className="mx-2">•</span>
                         <span>Uploaded on {formatDate(document.created_at)}</span>
                         {isSkillsSaved && (
                             <>
-                                <span className="mx-2">•</span>
                                 <span className="flex items-center text-green-600">
                                     <CheckCircle2 className="h-3 w-3 mr-1" />
                                     Skills saved
@@ -115,7 +112,7 @@ export function DocumentViewer({ document, isSkillsSaved, onDelete, onDownload, 
                 <Button
                     onClick={triggerFileInput}
                     variant="outline"
-                    className="flex-1 border-primary text-primary hover:bg-primary/10 hover:text-primary/90"
+                    className="w-full sm:w-auto border-primary text-primary hover:bg-primary/10 hover:text-primary/90"
                 >
                     <File className="mr-2 h-4 w-4" />
                     Replace Document

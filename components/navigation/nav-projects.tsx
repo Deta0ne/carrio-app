@@ -31,28 +31,35 @@ export function NavProjects({
         icon: LucideIcon;
     }[];
 }) {
-    const { isMobile } = useSidebar();
+    const { isMobile, setOpenMobile } = useSidebar();
     const pathname = usePathname();
 
+    const handleLinkClick = () => {
+        if (isMobile) {
+            setOpenMobile(false);
+        }
+    };
+
     return (
-        <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-            <SidebarGroupLabel>Extras</SidebarGroupLabel>
+        <SidebarGroup>
+            <SidebarGroupLabel>Projects</SidebarGroupLabel>
             <SidebarMenu>
-                {projects.map((item, index) => {
-                    const isActive = pathname.startsWith(item.url);
+                {projects.map((project) => {
+                    const isActive = pathname === project.url;
 
                     return (
-                        <SidebarMenuItem key={item.name}>
-                            <SidebarMenuButton asChild>
+                        <SidebarMenuItem key={project.name}>
+                            <SidebarMenuButton asChild tooltip={project.name}>
                                 <Link
-                                    href={item.url}
+                                    href={project.url}
+                                    onClick={handleLinkClick}
                                     className={cn(
                                         'group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground',
                                         isActive && 'bg-accent text-accent-foreground',
                                     )}
                                 >
-                                    <item.icon />
-                                    <span>{item.name}</span>
+                                    <project.icon className="mr-2 h-4 w-4" />
+                                    <span>{project.name}</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

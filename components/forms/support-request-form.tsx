@@ -83,10 +83,6 @@ const SupportRequestForm = () => {
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <h2 className="text-2xl font-semibold tracking-tight">Submit a Support Request</h2>
-                <p className="text-sm text-muted-foreground">
-                    Fill out the form below and our support team will get back to you as soon as possible.
-                </p>
                 <FormField
                     control={form.control}
                     name="issueType"

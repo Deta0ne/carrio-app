@@ -111,11 +111,11 @@ export default function AnalyticView({ applications }: { applications: JobApplic
 
     return (
         <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6">
-            <div className="flex items-center gap-4">
-                <h1 className="flex-1 text-2xl font-semibold tracking-tight">Analytics Dashboard</h1>
-                <div className="flex items-center gap-2">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                <h1 className="flex-1 text-xl font-semibold tracking-tight sm:text-2xl">Analytics Dashboard</h1>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                     <Select value={timeRange} onValueChange={setTimeRange}>
-                        <SelectTrigger className="w-[180px]">
+                        <SelectTrigger className="w-full sm:w-[180px]">
                             <SelectValue placeholder="Select time range" />
                         </SelectTrigger>
                         <SelectContent>
@@ -128,7 +128,7 @@ export default function AnalyticView({ applications }: { applications: JobApplic
                     </Select>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="gap-1">
+                            <Button variant="outline" className="w-full gap-1 sm:w-auto">
                                 <span>Export</span>
                                 <ChevronDown className="h-4 w-4" />
                             </Button>
@@ -144,7 +144,7 @@ export default function AnalyticView({ applications }: { applications: JobApplic
                     </DropdownMenu>
                 </div>
             </div>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <Card className="flex-1">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Total Applications</CardTitle>
@@ -203,18 +203,20 @@ export default function AnalyticView({ applications }: { applications: JobApplic
                     </CardContent>
                 </Card>
             </div>
-            <Tabs defaultValue="overview" className="space-y-4">
-                <TabsList>
-                    <TabsTrigger value="overview">Application Overview</TabsTrigger>
-                    <TabsTrigger value="performance">Performance Metrics</TabsTrigger>
-                </TabsList>
-                <TabsContent value="overview" className="space-y-4">
-                    <ApplicationOverview applications={filteredApplications} />
-                </TabsContent>
-                <TabsContent value="performance" className="space-y-4">
-                    <PerformanceMetrics applications={filteredApplications} />
-                </TabsContent>
-            </Tabs>
+            <div className="overflow-hidden">
+                <Tabs defaultValue="overview" className="space-y-4">
+                    <TabsList className="w-full justify-start overflow-x-auto">
+                        <TabsTrigger value="overview">Application Overview</TabsTrigger>
+                        <TabsTrigger value="performance">Performance Metrics</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="overview" className="space-y-4">
+                        <ApplicationOverview applications={filteredApplications} />
+                    </TabsContent>
+                    <TabsContent value="performance" className="space-y-4">
+                        <PerformanceMetrics applications={filteredApplications} />
+                    </TabsContent>
+                </Tabs>
+            </div>
         </main>
     );
 }

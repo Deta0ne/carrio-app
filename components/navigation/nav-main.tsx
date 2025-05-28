@@ -16,6 +16,7 @@ import {
     SidebarMenuSub,
     SidebarMenuSubButton,
     SidebarMenuSubItem,
+    useSidebar,
 } from '@/components/ui/sidebar';
 
 export function NavMain({
@@ -33,6 +34,13 @@ export function NavMain({
     }[];
 }) {
     const pathname = usePathname();
+    const { isMobile, setOpenMobile } = useSidebar();
+
+    const handleLinkClick = () => {
+        if (isMobile) {
+            setOpenMobile(false);
+        }
+    };
 
     return (
         <SidebarGroup>
@@ -47,6 +55,7 @@ export function NavMain({
                                 <SidebarMenuButton asChild tooltip={item.title}>
                                     <Link
                                         href={item.url}
+                                        onClick={handleLinkClick}
                                         className={cn(
                                             'group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground',
                                             isActive && 'bg-accent text-accent-foreground',
@@ -71,6 +80,7 @@ export function NavMain({
                                                         <SidebarMenuSubButton asChild>
                                                             <Link
                                                                 href={subItem.url}
+                                                                onClick={handleLinkClick}
                                                                 className={cn(
                                                                     'group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground',
                                                                     isActive && 'bg-accent text-accent-foreground',

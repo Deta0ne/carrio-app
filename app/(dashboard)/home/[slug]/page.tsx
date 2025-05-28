@@ -15,11 +15,8 @@ interface PageProps {
 function normalizeText(text: string): string {
     if (!text) return '';
 
-    return text
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase()
-        .trim();
+    // Remove any extra whitespace and convert to lowercase
+    return text.toLowerCase().trim();
 }
 
 async function findApplication(slug: string, userId: string, directId?: string) {
@@ -39,80 +36,58 @@ async function findApplication(slug: string, userId: string, directId?: string) 
 
     if (!userApplications?.length) return null;
 
+    // First try exact UUID match
     if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug)) {
         const exactMatch = userApplications.find((app) => app.id === slug);
         if (exactMatch) return exactMatch;
     }
 
+    // Then try short UUID match
     if (/^[0-9a-f]{8}$/i.test(slug)) {
         const shortIdMatch = userApplications.find((app) => app.id.startsWith(slug));
         if (shortIdMatch) return shortIdMatch;
     }
 
-    const idMatch = slug.match(/-([0-9a-f]{8})$/i);
-    if (idMatch) {
-        const shortId = idMatch[1];
-        const idMatches = userApplications.filter((app) => app.id.startsWith(shortId));
-
-        if (idMatches.length === 1) return idMatches[0];
-
-        if (idMatches.length > 1) {
-            const slugParts = slug.split('-at-');
-            if (slugParts.length === 2) {
-                const position = slugParts[0].replace(/-/g, ' ').toLowerCase();
-                const companyWithId = slugParts[1];
-                const company = companyWithId
-                    .substring(0, companyWithId.length - shortId.length - 1)
-                    .replace(/-/g, ' ')
-                    .toLowerCase();
-
-                const positionCompanyMatch = idMatches.find((app) => {
-                    const appPosition = normalizeText(app.position);
-                    const appCompany = normalizeText(app.company_name);
-
-                    const positionWords = position.split(' ').filter((word) => word.length > 2);
-                    const companyWords = company.split(' ').filter((word) => word.length > 2);
-
-                    const positionMatch = positionWords.some((word) => appPosition.includes(word));
-                    const companyMatch = companyWords.some((word) => appCompany.includes(word));
-
-                    return positionMatch && companyMatch;
-                });
-
-                if (positionCompanyMatch) return positionCompanyMatch;
-            }
-
-            return idMatches[0];
-        }
-    }
-
+    // Try to match by position and company name
     const slugParts = slug.split('-at-');
     if (slugParts.length === 2) {
-        const position = slugParts[0].replace(/-/g, ' ').toLowerCase();
-        const company = slugParts[1].replace(/-/g, ' ').toLowerCase();
+        const position = slugParts[0].replace(/-/g, ' ');
+        const company = slugParts[1].replace(/-/g, ' ');
+
+        // If there's an ID at the end, extract it
+        const idMatch = company.match(/-([0-9a-f]{8})$/i);
+        const shortId = idMatch ? idMatch[1] : null;
+        const companyName = shortId ? company.slice(0, -shortId.length - 1) : company;
 
         const matches = userApplications.filter((app) => {
             const appPosition = normalizeText(app.position);
             const appCompany = normalizeText(app.company_name);
+            const normalizedPosition = normalizeText(position);
+            const normalizedCompany = normalizeText(companyName);
 
-            const positionWords = position.split(' ').filter((word) => word.length > 2);
-            const companyWords = company.split(' ').filter((word) => word.length > 2);
+            // If we have a shortId, make sure it matches
+            if (shortId && !app.id.startsWith(shortId)) {
+                return false;
+            }
 
-            if (positionWords.length === 0 && companyWords.length === 0) return false;
-
-            const positionMatch =
-                positionWords.length === 0 || positionWords.every((word) => appPosition.includes(word));
-
-            const companyMatch = companyWords.length === 0 || companyWords.every((word) => appCompany.includes(word));
+            // Check if either position or company name contains the search term
+            const positionMatch = appPosition.includes(normalizedPosition) || normalizedPosition.includes(appPosition);
+            const companyMatch = appCompany.includes(normalizedCompany) || normalizedCompany.includes(appCompany);
 
             return positionMatch && companyMatch;
         });
 
         if (matches.length > 0) {
+            // If we have multiple matches and a shortId, prefer the one with matching ID
+            if (shortId && matches.length > 1) {
+                const idMatch = matches.find((app) => app.id.startsWith(shortId));
+                if (idMatch) return idMatch;
+            }
             return matches[0];
         }
     }
 
+    // Last resort: try to find any application with matching ID
     const lastResortMatch = slug.match(/[0-9a-f]{8}/i);
     if (lastResortMatch) {
         const shortId = lastResortMatch[0];
@@ -135,7 +110,7 @@ async function getUserOrRedirect() {
 export async function generateMetadata(props: PageProps): Promise<Metadata> {
     const params = await props.params;
     const searchParams = await props.searchParams;
-    const slug = params.slug;
+    const slug = decodeURIComponent(params.slug);
     const id = searchParams.id;
 
     try {
@@ -156,7 +131,7 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
 export default async function ApplicationDetailPage(props: PageProps) {
     const params = await props.params;
     const searchParams = await props.searchParams;
-    const slug = params.slug;
+    const slug = decodeURIComponent(params.slug);
     const id = searchParams.id;
 
     const user = await getUserOrRedirect();

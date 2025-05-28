@@ -14,10 +14,20 @@ export const loginSchema = z.object({
 export const registerSchema = z.object({
   name: z
     .string()
-    .min(1, 'Name is required'),
+    .min(1, 'Name is required')
+    .regex(
+      /^[a-zA-ZğüşıöçĞÜŞİÖÇ\s\-']+$/,
+      'Name can only contain letters, spaces, hyphens, and apostrophes'
+    )
+    .trim(),
   surname: z
     .string()
-    .min(1, 'Surname is required'),
+    .min(1, 'Surname is required')
+    .regex(
+      /^[a-zA-ZğüşıöçĞÜŞİÖÇ\s\-']+$/,
+      'Surname can only contain letters, spaces, hyphens, and apostrophes'
+    )
+    .trim(),
   email: z
     .string()
     .min(1, 'Email is required')

@@ -282,8 +282,8 @@ export function NotesList({ applicationId }: NotesListProps) {
                                             </Button>
                                         </div>
                                     </div>
-                                    <div className="space-y-2 text-gray-600 dark:text-gray-300">
-                                        <p className="text-sm mb-3 pr-8 text-amber-900 dark:text-amber-200">
+                                    <div className="space-y-2">
+                                        <p className="text-sm mb-3 break-words whitespace-pre-wrap text-amber-900 dark:text-amber-200">
                                             {note.content}
                                         </p>
                                     </div>

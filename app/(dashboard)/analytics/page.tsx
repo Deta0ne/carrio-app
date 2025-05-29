@@ -4,7 +4,6 @@ import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import Loading from '../home/loading';
 import AnalyticView from '@/components/analytics/analytic-view';
-export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
     title: 'Analytics',

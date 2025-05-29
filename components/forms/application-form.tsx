@@ -140,8 +140,11 @@ function ApplicationForm({ initialData, className, onSuccess }: ApplicationFormP
     return (
         <div className={cn('grid gap-6', className)}>
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 gap-4">
-                    <div className="space-y-4">
+                <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="grid grid-cols-1 gap-4 max-h-[80vh] md:max-h-none overflow-y-auto overscroll-contain"
+                >
+                    <div className="space-y-4 touch-manipulation">
                         <FormField
                             name="company_name"
                             render={({ field }) => (
@@ -149,7 +152,12 @@ function ApplicationForm({ initialData, className, onSuccess }: ApplicationFormP
                                     <FormLabel>Company Name</FormLabel>
                                     <FormControl>
                                         <div className="relative">
-                                            <Input placeholder="Enter company name" maxLength={35} {...field} />
+                                            <Input
+                                                placeholder="Enter company name"
+                                                maxLength={35}
+                                                className="focus:scroll-m-0"
+                                                {...field}
+                                            />
                                             <span className="absolute right-2 top-2 text-xs text-muted-foreground">
                                                 {field.value.length}/35
                                             </span>
@@ -167,7 +175,12 @@ function ApplicationForm({ initialData, className, onSuccess }: ApplicationFormP
                                     <FormLabel>Position</FormLabel>
                                     <FormControl>
                                         <div className="relative">
-                                            <Input placeholder="Enter position title" maxLength={35} {...field} />
+                                            <Input
+                                                placeholder="Enter position title"
+                                                maxLength={35}
+                                                className="focus:scroll-m-0"
+                                                {...field}
+                                            />
                                             <span className="absolute right-2 top-2 text-xs text-muted-foreground">
                                                 {field.value.length}/35
                                             </span>
@@ -179,7 +192,7 @@ function ApplicationForm({ initialData, className, onSuccess }: ApplicationFormP
                         />
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="space-y-4 touch-manipulation">
                         <FormField
                             name="status"
                             render={({ field }) => (
@@ -208,7 +221,7 @@ function ApplicationForm({ initialData, className, onSuccess }: ApplicationFormP
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Application Date</FormLabel>
-                                    <Popover>
+                                    <Popover modal={true}>
                                         <PopoverTrigger asChild>
                                             <FormControl>
                                                 <Button
@@ -227,7 +240,7 @@ function ApplicationForm({ initialData, className, onSuccess }: ApplicationFormP
                                                 </Button>
                                             </FormControl>
                                         </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0" align="start">
+                                        <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
                                             <Calendar
                                                 mode="single"
                                                 selected={field.value}
@@ -239,7 +252,6 @@ function ApplicationForm({ initialData, className, onSuccess }: ApplicationFormP
                                                     }
                                                     return date > new Date(new Date().setHours(23, 59, 59, 999));
                                                 }}
-                                                initialFocus
                                             />
                                         </PopoverContent>
                                     </Popover>
@@ -295,7 +307,7 @@ function ApplicationForm({ initialData, className, onSuccess }: ApplicationFormP
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Interview Date (Optional)</FormLabel>
-                                    <Popover>
+                                    <Popover modal={true}>
                                         <PopoverTrigger asChild>
                                             <FormControl>
                                                 <Button
@@ -314,13 +326,8 @@ function ApplicationForm({ initialData, className, onSuccess }: ApplicationFormP
                                                 </Button>
                                             </FormControl>
                                         </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0" align="start">
-                                            <Calendar
-                                                mode="single"
-                                                selected={field.value}
-                                                onSelect={field.onChange}
-                                                initialFocus
-                                            />
+                                        <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
+                                            <Calendar mode="single" selected={field.value} onSelect={field.onChange} />
                                         </PopoverContent>
                                     </Popover>
                                     <FormMessage />
@@ -333,7 +340,7 @@ function ApplicationForm({ initialData, className, onSuccess }: ApplicationFormP
                                 <FormItem>
                                     <FormLabel>Company Website (Optional)</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="https://..." {...field} />
+                                        <Input placeholder="https://..." className="focus:scroll-m-0" {...field} />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

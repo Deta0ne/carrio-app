@@ -47,15 +47,7 @@ export function DocumentsTab({
         initialIsSkillsSaved,
     });
 
-    const [activeTab, setActiveTab] = useState<string>(
-        document
-            ? defaultActiveTab === 'analysis'
-                ? 'analysis'
-                : 'document'
-            : categorizedSkills
-            ? 'analysis'
-            : 'document',
-    );
+    const [activeTab, setActiveTab] = useState<string>(document ? 'analysis' : 'document');
 
     const isLoadingProfile = false;
 

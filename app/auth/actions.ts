@@ -30,14 +30,6 @@ export async function register(data: RegisterInput) {
     const { data: authData, error: authError } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
-        options: {
-            emailRedirectTo: `${location.origin}/auth/callback`,
-            data: {
-                name: data.name,
-                surname: data.surname, 
-                avatar_url: null
-            }
-        },
     });
 
     if (authError) {

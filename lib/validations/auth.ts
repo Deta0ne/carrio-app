@@ -76,3 +76,14 @@ export type LoginInput = z.infer<typeof loginSchema>
 export type RegisterInput = z.infer<typeof registerSchema>
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>
+
+// Auth action result types
+export type AuthActionResult = {
+  success: boolean;
+  error?: string;
+}
+
+export type LoginResult = AuthActionResult
+export type RegisterResult = AuthActionResult
+export type ForgotPasswordResult = AuthActionResult
+export type ResetPasswordResult = AuthActionResult

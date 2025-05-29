@@ -30,10 +30,15 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
 
         try {
             const result = await login(data);
+            console.log('Login result:', result);
+
             if (result.success) {
                 const next = searchParams.get('next') || '/home';
                 router.push(next);
                 router.refresh();
+            } else {
+                // Handle error returned from server action
+                setError(result.error || 'An unexpected error occurred');
             }
         } catch (error) {
             console.error('Login form error:', error);

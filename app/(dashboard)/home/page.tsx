@@ -5,7 +5,6 @@ import { columns, DataTable } from '@/components/applications-table/index';
 import { ApplicationCreate } from '@/components/forms/application-form';
 import { redirect } from 'next/navigation';
 import Loading from './loading';
-export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
     title: 'Applications',

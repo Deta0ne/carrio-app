@@ -31,7 +31,7 @@ export default function NotFound() {
                     </Button>
 
                     <Button asChild className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700">
-                        <Link href="/">
+                        <Link href="/home">
                             <Home className="h-4 w-4" />
                             Go to Home
                         </Link>

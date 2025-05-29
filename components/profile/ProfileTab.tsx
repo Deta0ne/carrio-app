@@ -51,6 +51,8 @@ export function UserProfileSection({ user }: UserProfileSectionProps) {
         mode: 'onChange',
     });
 
+    const [initialValues, setInitialValues] = useState<ProfileFormValues | null>(null);
+
     useEffect(() => {
         if (!user) {
             setError('No user found. Please log in again.');
@@ -60,7 +62,7 @@ export function UserProfileSection({ user }: UserProfileSectionProps) {
 
         if (profile) {
             try {
-                form.reset({
+                const initialData = {
                     firstName: profile.name || '',
                     lastName: profile.surname || '',
                     email: profile.email || '',
@@ -69,7 +71,10 @@ export function UserProfileSection({ user }: UserProfileSectionProps) {
                     jobTitle: profile.job_title || '',
                     experience: profile.experience as 'entry' | 'junior' | 'mid' | 'senior' | '',
                     avatar_url: profile.avatar_url || '',
-                });
+                };
+
+                form.reset(initialData);
+                setInitialValues(initialData);
 
                 if (profile.avatar_url) {
                     setImagePreview(profile.avatar_url);
@@ -124,27 +129,27 @@ export function UserProfileSection({ user }: UserProfileSectionProps) {
 
     const handleEdit = () => {
         setIsEditMode(true);
+        if (initialValues) {
+            form.reset(initialValues);
+        }
     };
 
     const handleCancel = () => {
-        if (profile) {
-            form.reset({
-                firstName: profile.name || '',
-                lastName: profile.surname || '',
-                email: profile.email || '',
-                username: profile.username || '',
-                bio: profile.bio || '',
-                jobTitle: profile.job_title || '',
-                experience: profile.experience as 'entry' | 'junior' | 'mid' | 'senior' | '',
-                avatar_url: profile.avatar_url || '',
-            });
+        if (initialValues) {
+            form.reset(initialValues);
         }
-
-        if (profile?.avatar_url) {
-            setImagePreview(profile.avatar_url);
-        }
-
         setIsEditMode(false);
+    };
+
+    const hasFormChanged = () => {
+        if (!initialValues) return false;
+
+        const currentValues = form.getValues();
+        return Object.keys(currentValues).some((key) => {
+            const currentValue = currentValues[key as keyof ProfileFormValues] || '';
+            const initialValue = initialValues[key as keyof ProfileFormValues] || '';
+            return currentValue !== initialValue;
+        });
     };
 
     const onSubmit = async (values: ProfileFormValues) => {
@@ -438,7 +443,15 @@ export function UserProfileSection({ user }: UserProfileSectionProps) {
                                     >
                                         Cancel
                                     </Button>
-                                    <Button type="submit" disabled={isSaving || !form.formState.isValid}>
+                                    <Button
+                                        type="submit"
+                                        disabled={
+                                            isSaving ||
+                                            !form.formState.isValid ||
+                                            !hasFormChanged() ||
+                                            Object.keys(form.formState.errors).length > 0
+                                        }
+                                    >
                                         {isSaving ? (
                                             <>
                                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

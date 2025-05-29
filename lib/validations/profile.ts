@@ -3,11 +3,21 @@ import * as z from 'zod';
 export const profileFormSchema = z.object({
   firstName: z.string()
     .min(2, { message: 'First name must be at least 2 characters.' })
-    .max(50, { message: 'First name must not exceed 50 characters.' }),
+    .max(50, { message: 'First name must not exceed 50 characters.' })
+    .regex(
+      /^[a-zA-ZğüşıöçĞÜŞİÖÇ\s\-']+$/,
+      'First name can only contain letters, spaces, hyphens, and apostrophes'
+    )
+    .trim(),
   
   lastName: z.string()
     .min(2, { message: 'Last name must be at least 2 characters.' })
-    .max(50, { message: 'Last name must not exceed 50 characters.' }),
+    .max(50, { message: 'Last name must not exceed 50 characters.' })
+    .regex(
+      /^[a-zA-ZğüşıöçĞÜŞİÖÇ\s\-']+$/,
+      'Last name can only contain letters, spaces, hyphens, and apostrophes'
+    )
+    .trim(),
   
   email: z.string()
     .email({ message: 'Please enter a valid email address.' })
@@ -29,6 +39,10 @@ export const profileFormSchema = z.object({
   
   jobTitle: z.string()
     .max(100, { message: 'Job title must not exceed 100 characters.' })
+    .regex(
+      /^[a-zA-ZğüşıöçĞÜŞİÖÇ\s\-'&()]+$/,
+      'Job title can only contain letters, spaces, and basic punctuation (hyphen, apostrophe, parentheses, &)'
+    )
     .optional()
     .or(z.literal('')),
   
@@ -45,7 +59,6 @@ export const transformProfileFormValues = (values: ProfileFormValues, userId: st
     id: userId,
     name: values.firstName,
     surname: values.lastName,
-    email: values.email,
     username: values.username || undefined,
     bio: values.bio || undefined,
     job_title: values.jobTitle || undefined,

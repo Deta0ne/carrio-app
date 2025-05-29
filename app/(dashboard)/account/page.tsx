@@ -12,7 +12,6 @@ import { AccountSettingsTab } from '@/components/profile/AccountSettingsTab';
 import { UserProfileSection } from '@/components/profile/ProfileTab';
 import { serverProfileService } from '@/services/server-services';
 
-export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export const metadata: Metadata = {

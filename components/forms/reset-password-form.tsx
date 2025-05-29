@@ -11,6 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle2 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
+import { resetPassword } from '@/app/auth/actions';
 
 function ResetPasswordFormContent({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
     const router = useRouter();
@@ -58,34 +59,37 @@ function ResetPasswordFormContent({ className, ...props }: React.ComponentPropsW
             setError('Invalid state for password reset. Please request a new link.');
             return;
         }
+
         setError(null);
         setLoading(true);
-        try {
-            const { error: updateError } = await supabase.auth.updateUser({
-                password: data.password,
-            });
-            if (updateError) {
-                throw updateError;
-            }
 
+        try {
+            await resetPassword(data);
             setIsSubmitted(true);
+
             await supabase.auth.signOut();
+
             setTimeout(() => {
                 router.push('/login?message=Password updated successfully');
             }, 2000);
         } catch (error: any) {
             let errorMessage = 'An unexpected error occurred.';
+
             if (error.message) {
                 if (error.message.includes('Password should be at least 6 characters')) {
                     errorMessage = 'Password should be at least 6 characters.';
-                } else if (error.message.includes('same password') || error.code === 'same_password') {
+                } else if (error.message.includes('same password') || error.message.includes('same_password')) {
                     errorMessage = 'New password cannot be the same as the old password.';
                 } else if (error.message.includes('weak password')) {
                     errorMessage = 'Password is too weak. Please choose a stronger password.';
+                } else if (error.message.includes('invalid or expired link')) {
+                    errorMessage =
+                        'You are using an invalid or expired link. Please click the reset link in your email to try again.';
                 } else {
-                    errorMessage = `Error: ${error.message}`;
+                    errorMessage = error.message;
                 }
             }
+
             setError(errorMessage);
         } finally {
             setLoading(false);

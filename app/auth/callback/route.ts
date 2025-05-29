@@ -1,4 +1,4 @@
-export const dynamic = 'force-dynamic';
+
 import { type EmailOtpType } from '@supabase/supabase-js';
 import { type NextRequest } from 'next/server';
 import { createClient } from '@/utils/supabase/server';

@@ -141,8 +141,8 @@ export function PerformanceMetrics({ applications = [] }: { applications?: JobAp
     } satisfies ChartConfig;
 
     return (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <Card className="col-span-2">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            <Card className="col-span-full sm:col-span-1 lg:col-span-2  ">
                 <CardHeader>
                     <CardTitle>Response Rate by Source</CardTitle>
                     <CardDescription>Percentage of applications receiving a response per source</CardDescription>

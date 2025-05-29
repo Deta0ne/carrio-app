@@ -66,46 +66,64 @@ export default async function SupportPage() {
 
     const isLoggedIn = !!user;
     return (
-        <div className="container mx-auto py-10">
-            {/* Lİnk for home page */}
-            <Link href={isLoggedIn ? '/home' : '/'}>
-                <Button variant="outline">
-                    <ArrowLeftIcon className="w-4 h-4 mr-2" />
-                    Home
-                </Button>
-            </Link>
-            <Tabs defaultValue="support" className="max-w-3xl mx-auto">
-                <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="support">Submit Request</TabsTrigger>
-                    <TabsTrigger value="faq">FAQs</TabsTrigger>
-                </TabsList>
-                <TabsContent value="support">
-                    <div className="mt-6">{isLoggedIn ? <SupportRequestForm /> : <GuestSupportRequestForm />}</div>
-                </TabsContent>
-                <TabsContent value="faq">
-                    <div className="mt-6 space-y-6">
-                        <div>
-                            <h2 className="text-2xl font-semibold tracking-tight">Frequently Asked Questions</h2>
-                            <p className="text-sm text-muted-foreground">
-                                Find answers to common questions about our job application tracker.
-                            </p>
+        <div className="container mx-auto px-4 py-6 sm:py-10 min-h-[calc(100vh-4rem)]">
+            <div className="max-w-3xl mx-auto space-y-6">
+                <Link href={isLoggedIn ? '/home' : '/'}>
+                    <Button variant="outline" className="mb-6">
+                        <ArrowLeftIcon className="w-4 h-4 mr-2" />
+                        Home
+                    </Button>
+                </Link>
+                <Tabs defaultValue="support" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="support">Submit Request</TabsTrigger>
+                        <TabsTrigger value="faq">FAQs</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="support" className="mt-0">
+                        <div className="space-y-6 mt-4">
+                            <div className="text-center sm:text-left">
+                                <h2 className="text-xl sm:text-2xl font-semibold tracking-tight">
+                                    Submit a Support Request
+                                </h2>
+                                <p className="text-sm text-muted-foreground mt-2">
+                                    Fill out the form below and our support team will get back to you as soon as
+                                    possible.
+                                </p>
+                            </div>
+                            {isLoggedIn ? <SupportRequestForm /> : <GuestSupportRequestForm />}
                         </div>
-                        <Accordion type="single" collapsible className="w-full">
-                            {faqData.map((item) => (
-                                <AccordionItem value={item.id} key={item.id}>
-                                    <AccordionTrigger>{item.question}</AccordionTrigger>
-                                    <AccordionContent>{item.answer}</AccordionContent>
-                                </AccordionItem>
-                            ))}
-                        </Accordion>
-                        <Separator />
-                        <div className="text-center text-sm text-muted-foreground">
-                            <p>Can't find what you're looking for?</p>
-                            <p>Use the 'Submit Request' tab to contact our support team.</p>
+                    </TabsContent>
+                    <TabsContent value="faq" className="mt-4">
+                        <div className="space-y-6">
+                            <div className="text-center sm:text-left">
+                                <h2 className="text-xl sm:text-2xl font-semibold tracking-tight">
+                                    Frequently Asked Questions
+                                </h2>
+                                <p className="text-sm text-muted-foreground mt-2">
+                                    Find answers to common questions about our job application tracker.
+                                </p>
+                            </div>
+                            <Accordion type="single" collapsible className="w-full">
+                                {faqData.map((item) => (
+                                    <AccordionItem value={item.id} key={item.id}>
+                                        <AccordionTrigger className="text-sm sm:text-base">
+                                            {item.question}
+                                        </AccordionTrigger>
+                                        <AccordionContent className="text-sm">{item.answer}</AccordionContent>
+                                    </AccordionItem>
+                                ))}
+                            </Accordion>
+                            <Separator />
+                            <div className="text-center py-4">
+                                <p className="text-sm text-muted-foreground">Can't find what you're looking for?</p>
+                                <p className="text-sm text-muted-foreground">
+                                    Use the 'Submit Request' tab to contact our support team.
+                                </p>
+                            </div>
                         </div>
-                    </div>
-                </TabsContent>
-            </Tabs>
+                    </TabsContent>
+                </Tabs>
+            </div>
         </div>
     );
 }

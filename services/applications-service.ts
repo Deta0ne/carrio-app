@@ -7,9 +7,21 @@ const supabase = createClient();
 export const applicationsService = {
     async deleteApplication(id: string) {
         try {
-            const { error } = await supabase.from('job_applications').delete().eq('id', id);
+            const { data: { user }, error: userError } = await supabase.auth.getUser();
+            if (userError || !user) {
+                console.error('Authentication error:', userError);
+                throw new Error('Not authenticated');
+            }
+
+            const { error } = await supabase
+                .from('job_applications')
+                .delete()
+                .eq('id', id)
+                .eq('user_id', user.id);
 
             if (error) throw error;
+
+            await new Promise(resolve => setTimeout(resolve, 100));
 
             toast.success('Application deleted successfully');
             return true;

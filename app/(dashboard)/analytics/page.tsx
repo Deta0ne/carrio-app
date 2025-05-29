@@ -1,12 +1,9 @@
 import { Suspense } from 'react';
 import { createClient } from '@/utils/supabase/server';
 import { Metadata } from 'next';
-import { columns, DataTable } from '@/components/applications-table/index';
-import { ApplicationCreate } from '@/components/forms/application-form';
 import { redirect } from 'next/navigation';
 import Loading from '../home/loading';
 import AnalyticView from '@/components/analytics/analytic-view';
-export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
     title: 'Analytics',

@@ -30,13 +30,25 @@ export function LoginForm({ className, ...props }: React.ComponentPropsWithoutRe
 
         try {
             const result = await login(data);
+            console.log('Login result:', result);
+
             if (result.success) {
                 const next = searchParams.get('next') || '/home';
                 router.push(next);
                 router.refresh();
+            } else {
+                // Handle error returned from server action
+                setError(result.error || 'An unexpected error occurred');
             }
         } catch (error) {
-            setError(error instanceof Error ? error.message : 'An unexpected error occurred');
+            console.error('Login form error:', error);
+            const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+            console.log('Error details:', {
+                error,
+                errorMessage,
+                stack: error instanceof Error ? error.stack : 'No stack',
+            });
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }

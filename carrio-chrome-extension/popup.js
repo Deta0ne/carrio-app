@@ -1,5 +1,16 @@
 // Enhanced Popup Script for Carrio LinkedIn Job Tracker
-console.log('🚀 [CARRIO POPUP] Starting popup...');
+// Disable console logs for this script
+(function () {
+    const originalLog = console.log;
+    console.log = function (...args) {
+        // Check if this is a CARRIO POPUP log and suppress it
+        if (args.length > 0 && typeof args[0] === 'string' && args[0].includes('[CARRIO POPUP]')) {
+            return;
+        }
+        // Allow other logs to pass through
+        originalLog.apply(console, args);
+    };
+})();
 
 class CarrioPopup {
     constructor() {

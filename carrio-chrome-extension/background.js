@@ -1,19 +1,15 @@
 // Carrio Chrome Extension Background Script
 
-console.log('🚀 [CARRIO] Background script loaded');
-
 // Configuration
 const CONFIG = {
     API_BASE_URL: 'http://localhost:3000', // Change to production URL when deployed
     TIMEOUT: 10000, // 10 seconds timeout
-    DEBUG: true,
+    DEBUG: false,
 };
 
 // Utility functions
 function debugLog(...args) {
-    if (CONFIG.DEBUG) {
-        console.log('[Carrio Background]', ...args);
-    }
+    // Logs disabled
 }
 
 // Get auth token from cookies

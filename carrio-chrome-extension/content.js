@@ -1,29 +1,18 @@
 // LinkedIn Content Script for Carrio Job Tracker
 
-// Debug logging to verify script is loading
-console.log('🚀 [CARRIO] LinkedIn content script STARTED!');
-console.log('🚀 [CARRIO] Current URL:', window.location.href);
-
 (function () {
     'use strict';
 
-    // Immediate debug logging to verify script is loading
-    console.log('🚀 [CARRIO] LinkedIn content script STARTED!');
-    console.log('🚀 [CARRIO] Current URL:', window.location.href);
-    console.log('🚀 [CARRIO] Document ready state:', document.readyState);
+    // All console logs disabled for performance
 
     // Test if we can access Chrome extension APIs
-    if (typeof chrome !== 'undefined' && chrome.runtime) {
-        console.log('✅ [CARRIO] Chrome extension API available');
-    } else {
-        console.error('❌ [CARRIO] Chrome extension API not available!');
+    if (typeof chrome === 'undefined' || !chrome.runtime) {
+        return;
     }
-
-    console.log('Carrio LinkedIn tracker initialized');
 
     // Configuration
     const CONFIG = {
-        DEBUG: true,
+        DEBUG: false,
         TRACKING_DELAY: 2000, // Wait 2 seconds after action
         RETRY_ATTEMPTS: 3,
         SELECTORS: {
@@ -152,9 +141,7 @@ console.log('🚀 [CARRIO] Current URL:', window.location.href);
 
     // Utility functions
     function debugLog(...args) {
-        if (CONFIG.DEBUG) {
-            console.log('[Carrio LinkedIn]', ...args);
-        }
+        // Logs disabled
     }
 
     function getElementText(selectors) {
@@ -191,17 +178,7 @@ console.log('🚀 [CARRIO] Current URL:', window.location.href);
         const jobId = extractJobId();
         const jobUrl = getCurrentJobUrl();
 
-        console.log('🔍 [CARRIO] Raw extracted data:', {
-            jobTitle: jobTitle,
-            companyName: companyName,
-            location: location,
-            hasSpecialChars: /[-.]/.test(jobTitle),
-            hasDots: /\./.test(jobTitle),
-            hasParentheses: /[\(\)]/.test(jobTitle),
-            hasSlashes: /[\/\\]/.test(jobTitle),
-            titleLength: jobTitle.length,
-            originalTitle: jobTitle,
-        });
+        // Raw data extraction logging disabled for performance
 
         // Clean up extracted data
         const cleanedData = {
@@ -215,7 +192,7 @@ console.log('🚀 [CARRIO] Current URL:', window.location.href);
             applicationType: 'standard',
         };
 
-        console.log('✅ [CARRIO] Cleaned data:', cleanedData);
+        //console.log('✅ [CARRIO] Cleaned data:', cleanedData);
         debugLog('Extracted job details:', cleanedData);
 
         // Validate required fields
@@ -237,7 +214,7 @@ console.log('🚀 [CARRIO] Current URL:', window.location.href);
             return null;
         }
 
-        console.log('✅ [CARRIO] Validation passed');
+        //console.log('✅ [CARRIO] Validation passed');
         return cleanedData;
     }
 
@@ -274,7 +251,7 @@ console.log('🚀 [CARRIO] Current URL:', window.location.href);
             debugLog('Tracking application:', jobDetails);
 
             // Send to background script
-            console.log('📤 [CARRIO] Sending to background script...');
+            //console.log('📤 [CARRIO] Sending to background script...');
 
             const response = await new Promise((resolve, reject) => {
                 chrome.runtime.sendMessage(
@@ -287,7 +264,7 @@ console.log('🚀 [CARRIO] Current URL:', window.location.href);
                             console.error('❌ [CARRIO] Background script error:', chrome.runtime.lastError.message);
                             reject(new Error(chrome.runtime.lastError.message));
                         } else {
-                            console.log('✅ [CARRIO] Background script response:', response);
+                            //console.log('✅ [CARRIO] Background script response:', response);
                             resolve(response);
                         }
                     },
@@ -412,23 +389,7 @@ console.log('🚀 [CARRIO] Current URL:', window.location.href);
             const text = button.textContent?.toLowerCase() || '';
             const ariaLabel = button.getAttribute('aria-label')?.toLowerCase() || '';
 
-            // Enhanced logging for debugging
-            if (
-                text.includes('başvur') ||
-                text.includes('uygula') ||
-                text.includes('apply') ||
-                ariaLabel.includes('başvur') ||
-                ariaLabel.includes('uygula') ||
-                ariaLabel.includes('apply')
-            ) {
-                console.log('🔍 [CARRIO BUTTON DEBUG]', {
-                    text: button.textContent,
-                    ariaLabel: button.getAttribute('aria-label'),
-                    className: button.className,
-                    id: button.id,
-                    dataset: button.dataset,
-                });
-            }
+            // Enhanced logging disabled for performance
 
             // Turkish and English keywords for apply buttons
             const applyKeywords = [
@@ -456,7 +417,7 @@ console.log('🚀 [CARRIO] Current URL:', window.location.href);
             // Check for easy apply first (more specific)
             for (const keyword of easyApplyKeywords) {
                 if (text.includes(keyword) || ariaLabel.includes(keyword)) {
-                    console.log('✅ [CARRIO] Easy Apply button detected:', button.textContent?.trim());
+                    //console.log('✅ [CARRIO] Easy Apply button detected:', button.textContent?.trim());
                     return 'easy';
                 }
             }
@@ -470,7 +431,7 @@ console.log('🚀 [CARRIO] Current URL:', window.location.href);
                     );
 
                     if (isNotEasy) {
-                        console.log('✅ [CARRIO] Standard Apply button detected:', button.textContent?.trim());
+                        //console.log('✅ [CARRIO] Standard Apply button detected:', button.textContent?.trim());
                         return 'standard';
                     }
                 }
@@ -577,19 +538,19 @@ console.log('🚀 [CARRIO] Current URL:', window.location.href);
 
     // Initialize the tracker
     function initialize() {
-        console.log('🔧 [CARRIO] Initialize function called');
+        //console.log('🔧 [CARRIO] Initialize function called');
         debugLog('Initializing LinkedIn tracker');
         debugLog(
             'Language detection: Looking for Turkish (Başvur, Uygula, Kolay Başvuru) and English (Apply, Easy Apply) buttons',
         );
 
-        console.log('🔍 [CARRIO] Starting button detection...');
+        //console.log('🔍 [CARRIO] Starting button detection...');
 
         // Initial setup
         addApplyButtonListeners();
         setupObserver();
 
-        console.log('📡 [CARRIO] Observer setup complete');
+        //console.log('📡 [CARRIO] Observer setup complete');
 
         // Listen for URL changes (SPA navigation)
         let currentUrl = window.location.href;
@@ -603,14 +564,14 @@ console.log('🚀 [CARRIO] Current URL:', window.location.href);
             }
         }, 1000);
 
-        console.log('🔄 [CARRIO] URL change listener setup');
+        //console.log('🔄 [CARRIO] URL change listener setup');
 
         // Debug: Show available buttons after initialization
         setTimeout(() => {
-            console.log('🔍 [CARRIO] Scanning for buttons after 2 seconds...');
+            //console.log('🔍 [CARRIO] Scanning for buttons after 2 seconds...');
 
             const allButtons = document.querySelectorAll('button');
-            console.log(`🔍 [CARRIO] Total buttons found: ${allButtons.length}`);
+            //console.log(`🔍 [CARRIO] Total buttons found: ${allButtons.length}`);
 
             const applyButtons = Array.from(allButtons).filter((btn) => {
                 const text = btn.textContent?.toLowerCase() || '';
@@ -630,18 +591,9 @@ console.log('🚀 [CARRIO] Current URL:', window.location.href);
                 );
             });
 
-            console.log(`🎯 [CARRIO] Apply buttons found: ${applyButtons.length}`);
+            //console.log(`🎯 [CARRIO] Apply buttons found: ${applyButtons.length}`);
 
-            console.log('📋 [CARRIO] Button details:');
-            applyButtons.forEach((btn, index) => {
-                console.log(`  ${index + 1}.`, {
-                    text: btn.textContent?.trim(),
-                    ariaLabel: btn.getAttribute('aria-label'),
-                    className: btn.className,
-                    hasCarrioListener: !!btn.dataset.carrioListener,
-                    id: btn.id,
-                });
-            });
+            // Button details logging disabled for performance
 
             debugLog(
                 `Found ${applyButtons.length} potential apply buttons on page:`,
@@ -655,7 +607,7 @@ console.log('🚀 [CARRIO] Current URL:', window.location.href);
 
             // Create test button for manual testing
             if (applyButtons.length === 0) {
-                console.log('⚠️ [CARRIO] No apply buttons found! Creating manual test button...');
+                //console.log('⚠️ [CARRIO] No apply buttons found! Creating manual test button...');
                 createManualTestButton();
             }
         }, 2000);
@@ -680,36 +632,36 @@ console.log('🚀 [CARRIO] Current URL:', window.location.href);
             `;
 
             testButton.addEventListener('click', () => {
-                console.log('🧪 [CARRIO] Manual test triggered');
+                //console.log('🧪 [CARRIO] Manual test triggered');
                 trackApplication('manual');
             });
 
             document.body.appendChild(testButton);
-            console.log('✅ [CARRIO] Manual test button created');
+            //console.log('✅ [CARRIO] Manual test button created');
 
             // Remove after 30 seconds
             setTimeout(() => {
                 testButton.remove();
-                console.log('🗑️ [CARRIO] Manual test button removed');
+                //console.log('🗑️ [CARRIO] Manual test button removed');
             }, 30000);
         }
 
-        console.log('✅ [CARRIO] LinkedIn tracker initialized successfully');
+        //console.log('✅ [CARRIO] LinkedIn tracker initialized successfully');
         debugLog('LinkedIn tracker initialized successfully');
     }
 
     // Start when DOM is ready
-    console.log('🚀 [CARRIO] Script execution reached startup section');
-    console.log('🚀 [CARRIO] Document ready state:', document.readyState);
+    //console.log('🚀 [CARRIO] Script execution reached startup section');
+    //console.log('🚀 [CARRIO] Document ready state:', document.readyState);
 
     if (document.readyState === 'loading') {
-        console.log('🕐 [CARRIO] DOM still loading, adding event listener...');
+        //console.log('🕐 [CARRIO] DOM still loading, adding event listener...');
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('🎉 [CARRIO] DOMContentLoaded event fired!');
+            //console.log('🎉 [CARRIO] DOMContentLoaded event fired!');
             initialize();
         });
     } else {
-        console.log('🎉 [CARRIO] DOM already ready, initializing immediately...');
+        //console.log('🎉 [CARRIO] DOM already ready, initializing immediately...');
         initialize();
     }
 
@@ -741,5 +693,5 @@ console.log('🚀 [CARRIO] Current URL:', window.location.href);
         }
     });
 
-    console.log('🏁 [CARRIO] Script setup complete!');
+    //console.log('🏁 [CARRIO] Script setup complete!');
 })();

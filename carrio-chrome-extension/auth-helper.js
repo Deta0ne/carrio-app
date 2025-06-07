@@ -1,7 +1,18 @@
 // Auth Helper Content Script for Carrio Extension
 // This script runs on localhost to help get authentication tokens
 
-console.log('🔐 [CARRIO AUTH] Auth helper script loaded on:', window.location.href);
+// Disable console logs for this script
+(function () {
+    const originalLog = console.log;
+    console.log = function (...args) {
+        // Check if this is a CARRIO AUTH log and suppress it
+        if (args.length > 0 && typeof args[0] === 'string' && args[0].includes('[CARRIO AUTH]')) {
+            return;
+        }
+        // Allow other logs to pass through
+        originalLog.apply(console, args);
+    };
+})();
 
 // Function to get auth token from localStorage or cookies
 function getLocalAuthToken() {

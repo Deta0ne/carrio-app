@@ -1,0 +1,27 @@
+# Carrio Extension Icons
+
+Bu klasör Chrome extension için gerekli icon dosyalarını içerir.
+
+Gerekli icon boyutları:
+- icon16.png (16x16px) - Extension toolbar icon
+- icon32.png (32x32px) - Extension management page
+- icon48.png (48x48px) - Extension management page  
+- icon128.png (128x128px) - Chrome Web Store
+
+## Icon Tasarım Kılavuzu
+
+- Carrio branding'ine uygun olmalı
+- Basit ve tanınabilir tasarım
+- Yüksek kontrast (toolbar'da görünür olması için)
+- PNG formatında şeffaf background
+
+## Geçici Çözüm
+
+Developer testing için aşağıdaki online tool'ları kullanabilirsiniz:
+1. https://favicon.io/favicon-generator/ 
+2. "🚀" emoji ile icon generate edin
+3. Farklı boyutlarda export edin
+
+## Production İçin
+
+Professional icon tasarımı yapıldıktan sonra bu dosyaları değiştirin. 

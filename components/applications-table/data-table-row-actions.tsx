@@ -11,7 +11,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import Link from 'next/link';
-import { generateSlug } from '@/utils/slugify';
+// Removed slug import - using ID-based routing now
 import { useState } from 'react';
 import { JobApplication } from '@/types/database';
 import { applicationsService } from '@/services/applications-service';
@@ -26,7 +26,7 @@ interface DataTableRowActionsProps {
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const application = row.original;
-    const slug = generateSlug(application.position, application.company_name, application.id);
+    // Using ID-based routing instead of slugs
     const [isLoading, setIsLoading] = useState(false);
 
     const handleDelete = async () => {
@@ -61,7 +61,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-[160px]">
-                <Link href={`/home/${slug}`} className="w-full">
+                <Link href={`/home/${application.id}`} className="w-full">
                     <DropdownMenuItem>
                         <Eye className="mr-2 h-4 w-4" />
                         View Details

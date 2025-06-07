@@ -14,7 +14,6 @@ import {
     CalendarClock,
     Clock,
     Link2,
-    ArrowUpRight,
     Eye,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -32,7 +31,6 @@ import { useRouter } from 'next/navigation';
 import { DeleteApplicationDialog } from '@/components/applications-table/index';
 import Link from 'next/link';
 import { ApplicationDialog } from '@/components/applications/application-dialogs';
-import { generateSlug } from '@/utils/slugify';
 
 interface JobCardProps {
     job: JobApplication;
@@ -48,10 +46,8 @@ const JobCard = ({ job }: JobCardProps) => {
         }
     };
 
-    const slug = generateSlug(job.position, job.company_name, job.id);
-
     const navigateToDetail = () => {
-        router.push(`/home/${slug}?id=${job.id}`);
+        router.push(`/home/${job.id}`);
     };
 
     const statusIcons = {

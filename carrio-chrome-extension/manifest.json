@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Carrio Job Tracker",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Automatically track your LinkedIn job applications with Carrio - Never miss an opportunity!",
   "author": "Carrio Team",
   "permissions": [
@@ -12,11 +12,14 @@
   "host_permissions": [
     "https://www.linkedin.com/*",
     "https://linkedin.com/*",
+    "https://carrio-app.vercel.app/*",
+    "https://carrio.netlify.app/*",
     "http://localhost:3000/*",
     "https://localhost:3000/*",
     "http://127.0.0.1:3000/*",
     "https://127.0.0.1:3000/*",
     "https://*.vercel.app/*",
+    "https://*.netlify.app/*",
     "https://carrio.app/*"
   ],
   "background": {
@@ -35,6 +38,8 @@
     },
     {
       "matches": [
+        "https://carrio-app.vercel.app/*",
+        "https://carrio.netlify.app/*",
         "http://localhost:3000/*",
         "https://localhost:3000/*",
         "http://127.0.0.1:3000/*",

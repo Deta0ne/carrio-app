@@ -2,7 +2,8 @@
 
 // ===== CONSTANTS =====
 const CONFIG = {
-    API_BASE_URL: 'http://localhost:3000', // Change to production URL when deployed
+    // Production URL - Vercel deployment takes priority
+    API_BASE_URL: 'https://carrio-app.vercel.app',
     TIMEOUT: 10000, // 10 seconds timeout
     DEBUG: false,
     MAX_RETRY_ATTEMPTS: 3,
@@ -23,7 +24,13 @@ const AUTH_COOKIE_PATTERNS = [
     'supabase.auth.token',
 ];
 
-const SUPPORTED_DOMAINS = ['http://localhost:3000', 'https://localhost:3000', 'https://carrio.app'];
+const SUPPORTED_DOMAINS = [
+    'https://carrio-app.vercel.app',
+    'https://carrio.netlify.app',
+    'http://localhost:3000',
+    'https://localhost:3000',
+    'https://carrio.app',
+];
 
 // ===== GLOBAL STATE =====
 let cachedAuthToken = null;
@@ -136,21 +143,26 @@ async function getAuthToken() {
         // Try to get token from localStorage via content script
         try {
             const tabs = await chrome.tabs.query({});
-            const localhostTabs = tabs.filter(
-                (tab) => tab.url && (tab.url.includes('localhost:3000') || tab.url.includes('127.0.0.1:3000')),
+            const appTabs = tabs.filter(
+                (tab) =>
+                    tab.url &&
+                    (tab.url.includes('carrio-app.vercel.app') ||
+                        tab.url.includes('carrio.netlify.app') ||
+                        tab.url.includes('localhost:3000') ||
+                        tab.url.includes('127.0.0.1:3000')),
             );
 
-            if (localhostTabs.length > 0) {
-                debugLog(`Found ${localhostTabs.length} localhost tabs, trying to get token`);
+            if (appTabs.length > 0) {
+                debugLog(`Found ${appTabs.length} Carrio app tabs, trying to get token`);
 
-                for (const tab of localhostTabs) {
+                for (const tab of appTabs) {
                     try {
                         const result = await chrome.tabs.sendMessage(tab.id, {
                             type: 'GET_AUTH_TOKEN',
                         });
 
                         if (result && result.token) {
-                            debugLog('Got token from localhost tab');
+                            debugLog('Got token from Carrio app tab');
                             cachedAuthToken = result.token;
                             return result.token;
                         }
@@ -160,7 +172,7 @@ async function getAuthToken() {
                 }
             }
         } catch (tabError) {
-            debugLog('Error accessing localhost tabs:', tabError);
+            debugLog('Error accessing Carrio app tabs:', tabError);
         }
 
         // Check multiple domains for the auth token
@@ -320,14 +332,19 @@ async function createApplication(jobData, authToken) {
  */
 async function verifyCachedToken() {
     try {
-        // Method 1: Check if the cookie still exists in localStorage tabs
+        // Method 1: Check if the cookie still exists in Carrio app tabs
         const tabs = await chrome.tabs.query({});
-        const localhostTabs = tabs.filter(
-            (tab) => tab.url && (tab.url.includes('localhost:3000') || tab.url.includes('127.0.0.1:3000')),
+        const appTabs = tabs.filter(
+            (tab) =>
+                tab.url &&
+                (tab.url.includes('carrio-app.vercel.app') ||
+                    tab.url.includes('carrio.netlify.app') ||
+                    tab.url.includes('localhost:3000') ||
+                    tab.url.includes('127.0.0.1:3000')),
         );
 
-        if (localhostTabs.length > 0) {
-            for (const tab of localhostTabs) {
+        if (appTabs.length > 0) {
+            for (const tab of appTabs) {
                 try {
                     const result = await chrome.tabs.sendMessage(tab.id, {
                         type: 'CHECK_AUTH_COOKIE',
@@ -372,7 +389,7 @@ async function verifyCachedToken() {
             }
         }
 
-        debugLog('No localhost tabs found and no valid token');
+        debugLog('No Carrio app tabs found and no valid token');
         return false;
     } catch (error) {
         debugLog('Error verifying cached token:', error);
@@ -415,7 +432,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 
     if (message.type === 'AUTH_TOKEN_FOUND') {
-        debugLog('Auth token received from localhost:', message.token ? 'token present' : 'no token');
+        debugLog('Auth token received from Carrio app:', message.token ? 'token present' : 'no token');
         cachedAuthToken = message.token;
 
         // Notify popup if it's open

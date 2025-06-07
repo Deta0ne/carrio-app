@@ -3,18 +3,29 @@
 (function () {
     'use strict';
 
-    // All console logs disabled for performance
+    // ===== INITIALIZATION CHECKS =====
 
     // Test if we can access Chrome extension APIs
     if (typeof chrome === 'undefined' || !chrome.runtime) {
+        console.warn('[CARRIO] Chrome extension APIs not available');
         return;
     }
 
-    // Configuration
+    // Prevent multiple instances of the script
+    if (window.carrioExtensionLoaded) {
+        console.warn('[CARRIO] Extension already loaded, skipping');
+        return;
+    }
+    window.carrioExtensionLoaded = true;
+
+    // ===== CONFIGURATION =====
+
     const CONFIG = {
         DEBUG: false,
         TRACKING_DELAY: 2000, // Wait 2 seconds after action
         RETRY_ATTEMPTS: 3,
+        MAX_DESCRIPTION_LENGTH: 500,
+        NOTIFICATION_DURATION: 5000,
         SELECTORS: {
             // Job details
             jobTitle: [
@@ -111,20 +122,95 @@
         },
     };
 
+    // ===== GLOBAL STATE =====
+
     let isTracking = false;
     let lastTrackedJob = null;
     let observerActive = false;
 
-    // Settings for auto-tracking and notifications
-    let autoTrackingEnabled = true;
-    let notificationsEnabled = true;
+    // Extension settings
+    let extensionSettings = {
+        autoTracking: true,
+        notifications: true,
+    };
+
+    // ===== UTILITY FUNCTIONS =====
+
+    function debugLog(...args) {
+        // Logs disabled for performance
+    }
+
+    /**
+     * Safely update extension settings
+     * @param {object} newSettings - New settings object
+     */
+    function updateSettings(newSettings) {
+        extensionSettings = {
+            ...extensionSettings,
+            ...newSettings,
+        };
+        debugLog('Settings updated:', extensionSettings);
+    }
+
+    /**
+     * Extract text from DOM elements using multiple selectors
+     * @param {Array<string>} selectors - CSS selectors to try
+     * @returns {string} Found text or empty string
+     */
+    function getElementText(selectors) {
+        for (const selector of selectors) {
+            try {
+                const element = document.querySelector(selector);
+                if (element) {
+                    const text = element.textContent?.trim() || '';
+                    if (text) {
+                        debugLog(`Found text for selector "${selector}":`, text);
+                        return text;
+                    }
+                }
+            } catch (error) {
+                debugLog(`Error with selector "${selector}":`, error);
+            }
+        }
+        debugLog('No text found for selectors:', selectors);
+        return '';
+    }
+
+    /**
+     * Get current job URL
+     * @returns {string} Current URL
+     */
+    function getCurrentJobUrl() {
+        return window.location.href;
+    }
+
+    /**
+     * Extract LinkedIn job ID from URL
+     * @returns {string|null} Job ID or null if not found
+     */
+    function extractJobId() {
+        const urlMatch = window.location.href.match(/\/jobs\/view\/(\d+)/);
+        return urlMatch ? urlMatch[1] : null;
+    }
+
+    /**
+     * Clean and format text data
+     * @param {string} text - Raw text to clean
+     * @returns {string} Cleaned text
+     */
+    function cleanText(text) {
+        return text?.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim() || '';
+    }
+
+    // ===== MESSAGE HANDLING =====
 
     // Listen for settings updates from popup
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (message.type === 'UPDATE_SETTINGS') {
-            autoTrackingEnabled = message.autoTracking;
-            notificationsEnabled = message.notifications;
-            debugLog('Settings updated:', { autoTrackingEnabled, notificationsEnabled });
+            updateSettings({
+                autoTracking: message.autoTracking,
+                notifications: message.notifications,
+            });
             sendResponse({ success: true });
         }
         return true;
@@ -133,92 +219,66 @@
     // Get initial settings from background
     chrome.runtime.sendMessage({ type: 'GET_SETTINGS' }, (response) => {
         if (response) {
-            autoTrackingEnabled = response.autoTracking ?? true;
-            notificationsEnabled = response.notifications ?? true;
-            debugLog('Initial settings loaded:', { autoTrackingEnabled, notificationsEnabled });
+            updateSettings({
+                autoTracking: response.autoTracking ?? true,
+                notifications: response.notifications ?? true,
+            });
+            debugLog('Initial settings loaded:', extensionSettings);
         }
     });
 
-    // Utility functions
-    function debugLog(...args) {
-        // Logs disabled
-    }
+    // ===== JOB DATA EXTRACTION =====
 
-    function getElementText(selectors) {
-        for (const selector of selectors) {
-            const element = document.querySelector(selector);
-            if (element) {
-                const text = element.textContent?.trim() || '';
-                if (text) {
-                    debugLog(`Found text for selector "${selector}":`, text);
-                    return text;
-                }
-            }
-        }
-        debugLog('No text found for selectors:', selectors);
-        return '';
-    }
-
-    function getCurrentJobUrl() {
-        return window.location.href;
-    }
-
-    function extractJobId() {
-        const urlMatch = window.location.href.match(/\/jobs\/view\/(\d+)/);
-        return urlMatch ? urlMatch[1] : null;
-    }
-
-    // Extract job details from current page
+    /**
+     * Extract job details from current LinkedIn page
+     * @returns {object|null} Job details object or null if validation fails
+     */
     function extractJobDetails() {
-        const jobTitle = getElementText(CONFIG.SELECTORS.jobTitle);
-        const companyName = getElementText(CONFIG.SELECTORS.companyName);
-        const location = getElementText(CONFIG.SELECTORS.location);
-        const description = getElementText(CONFIG.SELECTORS.description);
-        const salary = getElementText(CONFIG.SELECTORS.salary);
-        const jobId = extractJobId();
-        const jobUrl = getCurrentJobUrl();
+        try {
+            const jobTitle = getElementText(CONFIG.SELECTORS.jobTitle);
+            const companyName = getElementText(CONFIG.SELECTORS.companyName);
+            const location = getElementText(CONFIG.SELECTORS.location);
+            const description = getElementText(CONFIG.SELECTORS.description);
+            const salary = getElementText(CONFIG.SELECTORS.salary);
+            const jobId = extractJobId();
+            const jobUrl = getCurrentJobUrl();
 
-        // Raw data extraction logging disabled for performance
+            // Clean up extracted data
+            const cleanedData = {
+                position: cleanText(jobTitle),
+                company_name: cleanText(companyName),
+                location: cleanText(location.split('•')[0]), // Take first part before bullet
+                description: description.substring(0, CONFIG.MAX_DESCRIPTION_LENGTH).trim(),
+                salary: salary.includes('$') ? cleanText(salary) : '',
+                jobId,
+                jobUrl,
+                applicationType: 'standard',
+            };
 
-        // Clean up extracted data
-        const cleanedData = {
-            position: jobTitle.replace(/\n/g, ' ').trim(),
-            company_name: companyName.replace(/\n/g, ' ').trim(),
-            location: location.replace(/\n/g, ' ').split('•')[0].trim(), // Take first part before bullet
-            description: description.substring(0, 500).trim(), // Limit description length
-            salary: salary.includes('$') ? salary.trim() : '',
-            jobId: jobId,
-            jobUrl: jobUrl,
-            applicationType: 'standard',
-        };
+            debugLog('Extracted job details:', cleanedData);
 
-        //console.log('✅ [CARRIO] Cleaned data:', cleanedData);
-        debugLog('Extracted job details:', cleanedData);
+            // Validate required fields
+            if (!cleanedData.position || !cleanedData.company_name) {
+                console.error('❌ [CARRIO] Validation failed:', {
+                    position: cleanedData.position,
+                    company_name: cleanedData.company_name,
+                });
+                return null;
+            }
 
-        // Validate required fields
-        if (!cleanedData.position || !cleanedData.company_name) {
-            console.error('❌ [CARRIO] Validation failed:', {
-                position: cleanedData.position,
-                company_name: cleanedData.company_name,
-                positionEmpty: !cleanedData.position,
-                companyEmpty: !cleanedData.company_name,
-                positionLength: cleanedData.position?.length || 0,
-                companyLength: cleanedData.company_name?.length || 0,
-                originalJobTitle: jobTitle,
-                hasDotInOriginal: /\./.test(jobTitle),
-            });
-            debugLog('Missing required fields:', {
-                position: cleanedData.position,
-                company_name: cleanedData.company_name,
-            });
+            return cleanedData;
+        } catch (error) {
+            console.error('❌ [CARRIO] Error extracting job details:', error);
             return null;
         }
-
-        //console.log('✅ [CARRIO] Validation passed');
-        return cleanedData;
     }
 
-    // Track application
+    // ===== APPLICATION TRACKING =====
+
+    /**
+     * Track application with the background script
+     * @param {string} applicationType - Type of application ('standard' or 'easy')
+     */
     async function trackApplication(applicationType = 'standard') {
         if (isTracking) {
             debugLog('Already tracking an application, skipping');
@@ -226,7 +286,7 @@
         }
 
         // Check if auto-tracking is enabled
-        if (!autoTrackingEnabled) {
+        if (!extensionSettings.autoTracking) {
             debugLog('Auto-tracking is disabled, skipping');
             return;
         }
@@ -251,8 +311,6 @@
             debugLog('Tracking application:', jobDetails);
 
             // Send to background script
-            //console.log('📤 [CARRIO] Sending to background script...');
-
             const response = await new Promise((resolve, reject) => {
                 chrome.runtime.sendMessage(
                     {
@@ -264,7 +322,6 @@
                             console.error('❌ [CARRIO] Background script error:', chrome.runtime.lastError.message);
                             reject(new Error(chrome.runtime.lastError.message));
                         } else {
-                            //console.log('✅ [CARRIO] Background script response:', response);
                             resolve(response);
                         }
                     },
@@ -295,7 +352,13 @@
         }
     }
 
-    // Show tracking success notification
+    // ===== NOTIFICATION SYSTEM =====
+
+    /**
+     * Show tracking success notification
+     * @param {object} jobDetails - Job details object
+     * @param {string} applicationType - Application type
+     */
     function showTrackingSuccess(jobDetails, applicationType) {
         const typeText = applicationType === 'easy' ? 'Hızlı Başvuru' : 'Standart Başvuru';
         const notification = createNotification(
@@ -306,7 +369,10 @@
         showNotification(notification);
     }
 
-    // Show duplicate notice
+    /**
+     * Show duplicate application notice
+     * @param {object} jobDetails - Job details object
+     */
     function showDuplicateNotice(jobDetails) {
         const notification = createNotification(
             'warning',
@@ -316,56 +382,75 @@
         showNotification(notification);
     }
 
-    // Show tracking error
+    /**
+     * Show tracking error notification
+     * @param {string} message - Error message
+     */
     function showTrackingError(message) {
         const notification = createNotification('error', '❌ Takip Başarısız', message);
         showNotification(notification);
     }
 
-    // Create notification element
+    /**
+     * Create notification DOM element
+     * @param {string} type - Notification type ('success', 'warning', 'error')
+     * @param {string} title - Notification title
+     * @param {string} message - Notification message
+     * @returns {HTMLElement} Notification element
+     */
     function createNotification(type, title, message) {
         const notification = document.createElement('div');
+
+        const colors = {
+            success: '#10B981',
+            warning: '#F59E0B',
+            error: '#EF4444',
+        };
+
         notification.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: ${type === 'success' ? '#10B981' : type === 'warning' ? '#F59E0B' : '#EF4444'};
-      color: white;
-      padding: 16px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      z-index: 10000;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      font-size: 14px;
-      max-width: 300px;
-      animation: slideIn 0.3s ease-out;
-    `;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${colors[type] || colors.success};
+            color: white;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 10000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 14px;
+            max-width: 300px;
+            animation: slideIn 0.3s ease-out;
+        `;
 
         notification.innerHTML = `
-      <div style="font-weight: 600; margin-bottom: 4px;">${title}</div>
-      <div style="opacity: 0.9;">${message}</div>
-    `;
+            <div style="font-weight: 600; margin-bottom: 4px;">${title}</div>
+            <div style="opacity: 0.9;">${message}</div>
+        `;
 
         // Add animation styles
         if (!document.getElementById('carrio-notification-styles')) {
             const styles = document.createElement('style');
             styles.id = 'carrio-notification-styles';
             styles.textContent = `
-        @keyframes slideIn {
-          from { transform: translateX(100%); opacity: 0; }
-          to { transform: translateX(0); opacity: 1; }
-        }
-      `;
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+            `;
             document.head.appendChild(styles);
         }
 
         return notification;
     }
 
-    // Show notification
+    /**
+     * Show notification to user
+     * @param {HTMLElement} notification - Notification element
+     */
     function showNotification(notification) {
         // Check if notifications are enabled
-        if (!notificationsEnabled) {
+        if (!extensionSettings.notifications) {
             debugLog('Notifications are disabled, not showing notification');
             return;
         }
@@ -379,17 +464,23 @@
                     notification.parentNode.removeChild(notification);
                 }
             }, 300);
-        }, 4000);
+        }, CONFIG.NOTIFICATION_DURATION);
     }
 
-    // Detect apply button clicks
+    // ===== BUTTON DETECTION =====
+
+    /**
+     * Add event listeners to apply buttons
+     */
     function addApplyButtonListeners() {
-        // Helper function to check if button contains apply-related text
+        /**
+         * Check if button is an apply button
+         * @param {HTMLElement} button - Button element to check
+         * @returns {object} Button analysis result
+         */
         function isApplyButton(button) {
             const text = button.textContent?.toLowerCase() || '';
             const ariaLabel = button.getAttribute('aria-label')?.toLowerCase() || '';
-
-            // Enhanced logging disabled for performance
 
             // Turkish and English keywords for apply buttons
             const applyKeywords = [
@@ -409,121 +500,69 @@
                 'kolay başvuru',
                 'kolayca başvur',
                 'kolayca başvurun',
-                'hızlı',
-                'kolay',
-                'kolayca',
             ];
 
-            // Check for easy apply first (more specific)
-            for (const keyword of easyApplyKeywords) {
-                if (text.includes(keyword) || ariaLabel.includes(keyword)) {
-                    //console.log('✅ [CARRIO] Easy Apply button detected:', button.textContent?.trim());
-                    return 'easy';
-                }
-            }
+            const isStandardApply = applyKeywords.some(
+                (keyword) => text.includes(keyword) || ariaLabel.includes(keyword),
+            );
 
-            // Check for regular apply
-            for (const keyword of applyKeywords) {
-                if (text.includes(keyword) || ariaLabel.includes(keyword)) {
-                    // Make sure it's not an easy apply button
-                    const isNotEasy = !easyApplyKeywords.some(
-                        (easy) => text.includes(easy) || ariaLabel.includes(easy),
-                    );
+            const isEasyApply = easyApplyKeywords.some(
+                (keyword) => text.includes(keyword) || ariaLabel.includes(keyword),
+            );
 
-                    if (isNotEasy) {
-                        //console.log('✅ [CARRIO] Standard Apply button detected:', button.textContent?.trim());
-                        return 'standard';
-                    }
-                }
-            }
-
-            return null;
+            return {
+                isApply: isStandardApply || isEasyApply,
+                isEasy: isEasyApply,
+                text,
+                ariaLabel,
+            };
         }
 
-        // Find all potential apply buttons
+        // Find and attach listeners to apply buttons
         const allButtons = document.querySelectorAll('button');
 
         allButtons.forEach((button) => {
-            if (button.dataset.carrioListener) return; // Already processed
+            const analysis = isApplyButton(button);
 
-            const buttonType = isApplyButton(button);
-            if (!buttonType) return;
+            if (analysis.isApply && !button.hasCarrioListener) {
+                button.hasCarrioListener = true;
 
-            button.dataset.carrioListener = 'true';
-
-            button.addEventListener('click', () => {
-                debugLog(
-                    `${buttonType === 'easy' ? 'Easy Apply' : 'Apply'} button clicked (${button.textContent?.trim()})`,
-                );
-                setTimeout(() => trackApplication(buttonType), CONFIG.TRACKING_DELAY);
-            });
-
-            debugLog(`Added listener to ${buttonType} button:`, button.textContent?.trim());
-        });
-
-        // Also use the original selectors as fallback
-        CONFIG.SELECTORS.easyApplyButton.forEach((selector) => {
-            const buttons = document.querySelectorAll(selector);
-            buttons.forEach((button) => {
-                if (!button.dataset.carrioListener) {
-                    button.dataset.carrioListener = 'true';
-                    button.addEventListener('click', () => {
-                        debugLog('Easy Apply button clicked (selector match)');
-                        setTimeout(() => trackApplication('easy'), CONFIG.TRACKING_DELAY);
-                    });
-                }
-            });
-        });
-
-        CONFIG.SELECTORS.applyButton.forEach((selector) => {
-            const buttons = document.querySelectorAll(selector);
-            buttons.forEach((button) => {
-                if (!button.dataset.carrioListener) {
-                    // Make sure it's not an Easy Apply button
-                    const text = button.textContent?.toLowerCase() || '';
-                    const ariaLabel = button.getAttribute('aria-label')?.toLowerCase() || '';
-
-                    const isEasy =
-                        text.includes('easy') ||
-                        text.includes('hızlı') ||
-                        text.includes('kolay') ||
-                        text.includes('kolayca') ||
-                        ariaLabel.includes('easy') ||
-                        ariaLabel.includes('hızlı') ||
-                        ariaLabel.includes('kolay') ||
-                        ariaLabel.includes('kolayca');
-
-                    if (!isEasy) {
-                        button.dataset.carrioListener = 'true';
-                        button.addEventListener('click', () => {
-                            debugLog('Apply button clicked (selector match)');
-                            setTimeout(() => trackApplication('standard'), CONFIG.TRACKING_DELAY);
-                        });
-                    }
-                }
-            });
+                button.addEventListener('click', () => {
+                    debugLog('Apply button clicked:', analysis);
+                    setTimeout(() => {
+                        const applicationType = analysis.isEasy ? 'easy' : 'standard';
+                        trackApplication(applicationType);
+                    }, CONFIG.TRACKING_DELAY);
+                });
+            }
         });
     }
 
-    // Watch for DOM changes
+    // ===== PAGE MONITORING =====
+
+    /**
+     * Setup DOM observer to watch for new apply buttons
+     */
     function setupObserver() {
         if (observerActive) return;
 
         const observer = new MutationObserver((mutations) => {
-            let shouldCheck = false;
+            let shouldCheckButtons = false;
 
             mutations.forEach((mutation) => {
                 if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-                    shouldCheck = true;
+                    mutation.addedNodes.forEach((node) => {
+                        if (node.nodeType === Node.ELEMENT_NODE) {
+                            if (node.tagName === 'BUTTON' || node.querySelector('button')) {
+                                shouldCheckButtons = true;
+                            }
+                        }
+                    });
                 }
             });
 
-            if (shouldCheck) {
-                // Debounce the check
-                clearTimeout(window.carrioObserverTimeout);
-                window.carrioObserverTimeout = setTimeout(() => {
-                    addApplyButtonListeners();
-                }, 500);
+            if (shouldCheckButtons) {
+                addApplyButtonListeners();
             }
         });
 
@@ -533,165 +572,75 @@
         });
 
         observerActive = true;
-        debugLog('DOM observer setup complete');
+        debugLog('DOM observer started');
     }
 
-    // Initialize the tracker
-    function initialize() {
-        //console.log('🔧 [CARRIO] Initialize function called');
-        debugLog('Initializing LinkedIn tracker');
-        debugLog(
-            'Language detection: Looking for Turkish (Başvur, Uygula, Kolay Başvuru) and English (Apply, Easy Apply) buttons',
-        );
+    // ===== INITIALIZATION =====
 
-        //console.log('🔍 [CARRIO] Starting button detection...');
+    /**
+     * Initialize the extension on LinkedIn job pages
+     */
+    function initialize() {
+        // Check if we're on a LinkedIn job page
+        if (!window.location.href.includes('linkedin.com/jobs')) {
+            debugLog('Not on LinkedIn jobs page, skipping initialization');
+            return;
+        }
+
+        debugLog('Initializing Carrio extension on LinkedIn jobs page');
 
         // Initial setup
         addApplyButtonListeners();
         setupObserver();
 
-        //console.log('📡 [CARRIO] Observer setup complete');
-
-        // Listen for URL changes (SPA navigation)
-        let currentUrl = window.location.href;
+        // Re-scan periodically for dynamic content
         setInterval(() => {
-            if (window.location.href !== currentUrl) {
-                currentUrl = window.location.href;
-                debugLog('URL changed, reinitializing button listeners');
-                setTimeout(() => {
-                    addApplyButtonListeners();
-                }, 1000);
-            }
-        }, 1000);
+            addApplyButtonListeners();
+        }, 5000);
 
-        //console.log('🔄 [CARRIO] URL change listener setup');
-
-        // Debug: Show available buttons after initialization
-        setTimeout(() => {
-            //console.log('🔍 [CARRIO] Scanning for buttons after 2 seconds...');
-
-            const allButtons = document.querySelectorAll('button');
-            //console.log(`🔍 [CARRIO] Total buttons found: ${allButtons.length}`);
-
-            const applyButtons = Array.from(allButtons).filter((btn) => {
-                const text = btn.textContent?.toLowerCase() || '';
-                const ariaLabel = btn.getAttribute('aria-label')?.toLowerCase() || '';
-                return (
-                    text.includes('apply') ||
-                    text.includes('başvur') ||
-                    text.includes('uygula') ||
-                    text.includes('kolay') ||
-                    text.includes('hızlı') ||
-                    ariaLabel.includes('apply') ||
-                    ariaLabel.includes('başvur') ||
-                    ariaLabel.includes('uygula') ||
-                    ariaLabel.includes('kolay') ||
-                    ariaLabel.includes('hızlı') ||
-                    ariaLabel.includes('kolayca')
-                );
-            });
-
-            //console.log(`🎯 [CARRIO] Apply buttons found: ${applyButtons.length}`);
-
-            // Button details logging disabled for performance
-
-            debugLog(
-                `Found ${applyButtons.length} potential apply buttons on page:`,
-                applyButtons.map((btn) => ({
-                    text: btn.textContent?.trim(),
-                    ariaLabel: btn.getAttribute('aria-label'),
-                    className: btn.className,
-                    hasListener: !!btn.dataset.carrioListener,
-                })),
-            );
-
-            // Create test button for manual testing
-            if (applyButtons.length === 0) {
-                //console.log('⚠️ [CARRIO] No apply buttons found! Creating manual test button...');
-                createManualTestButton();
-            }
-        }, 2000);
-
-        // Create manual test function
-        function createManualTestButton() {
-            const testButton = document.createElement('button');
-            testButton.innerHTML = '🧪 Test Carrio Tracking';
-            testButton.style.cssText = `
-                position: fixed;
-                top: 10px;
-                right: 10px;
-                z-index: 10000;
-                background: #0073b1;
-                color: white;
-                border: none;
-                padding: 10px 15px;
-                border-radius: 5px;
-                cursor: pointer;
-                font-weight: bold;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            `;
-
-            testButton.addEventListener('click', () => {
-                //console.log('🧪 [CARRIO] Manual test triggered');
-                trackApplication('manual');
-            });
-
-            document.body.appendChild(testButton);
-            //console.log('✅ [CARRIO] Manual test button created');
-
-            // Remove after 30 seconds
-            setTimeout(() => {
-                testButton.remove();
-                //console.log('🗑️ [CARRIO] Manual test button removed');
-            }, 30000);
+        // Debug mode features
+        if (CONFIG.DEBUG) {
+            createManualTestButton();
         }
 
-        //console.log('✅ [CARRIO] LinkedIn tracker initialized successfully');
-        debugLog('LinkedIn tracker initialized successfully');
+        debugLog('Carrio extension initialized successfully');
     }
 
-    // Start when DOM is ready
-    //console.log('🚀 [CARRIO] Script execution reached startup section');
-    //console.log('🚀 [CARRIO] Document ready state:', document.readyState);
+    /**
+     * Create manual test button for debugging
+     */
+    function createManualTestButton() {
+        const testButton = document.createElement('button');
+        testButton.textContent = '🧪 Test Carrio Tracking';
+        testButton.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 9999;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+        `;
 
-    if (document.readyState === 'loading') {
-        //console.log('🕐 [CARRIO] DOM still loading, adding event listener...');
-        document.addEventListener('DOMContentLoaded', () => {
-            //console.log('🎉 [CARRIO] DOMContentLoaded event fired!');
-            initialize();
+        testButton.addEventListener('click', () => {
+            trackApplication('manual');
         });
+
+        document.body.appendChild(testButton);
+        debugLog('Manual test button created');
+    }
+
+    // ===== STARTUP =====
+
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initialize);
     } else {
-        //console.log('🎉 [CARRIO] DOM already ready, initializing immediately...');
         initialize();
     }
-
-    // Listen for messages from popup
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-        debugLog('Content script received message:', message);
-
-        if (message.type === 'TEST_EXTRACTION') {
-            try {
-                const jobDetails = extractJobDetails();
-                if (jobDetails) {
-                    sendResponse({
-                        success: true,
-                        data: jobDetails,
-                        message: 'Job details extracted successfully',
-                    });
-                } else {
-                    sendResponse({
-                        success: false,
-                        error: 'Could not extract job details from current page',
-                    });
-                }
-            } catch (error) {
-                sendResponse({
-                    success: false,
-                    error: error.message,
-                });
-            }
-        }
-    });
-
-    //console.log('🏁 [CARRIO] Script setup complete!');
 })();

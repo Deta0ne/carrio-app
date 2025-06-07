@@ -1,5 +1,9 @@
-// Enhanced Popup Script for Carrio LinkedIn Job Tracker
-// Disable console logs for this script
+/**
+ * Enhanced Popup Script for Carrio LinkedIn Job Tracker
+ * Manages the extension popup interface and user interactions
+ */
+
+// ===== CONSOLE LOG SUPPRESSION =====
 (function () {
     const originalLog = console.log;
     console.log = function (...args) {
@@ -12,76 +16,149 @@
     };
 })();
 
+// ===== MAIN POPUP CLASS =====
+
+/**
+ * Main popup controller class
+ * Handles authentication, settings, and UI updates
+ */
 class CarrioPopup {
     constructor() {
+        // ===== STATE PROPERTIES =====
         this.isAuthenticated = false;
+        this.isLoading = false;
         this.settings = {
             autoTracking: true,
             notifications: true,
         };
         this.recentApplications = [];
 
-        this.init();
+        // ===== CONFIGURATION =====
+        this.config = {
+            API_TIMEOUT: 10000,
+            REFRESH_INTERVAL: 30000,
+            MAX_RECENT_APPS: 5,
+        };
+
+        // Initialize the popup
+        this.init().catch((error) => {
+            console.error('❌ [CARRIO POPUP] Fatal initialization error:', error);
+            this.showError('Failed to initialize popup: ' + error.message);
+        });
     }
 
+    // ===== INITIALIZATION =====
+
+    /**
+     * Initialize the popup interface
+     * @returns {Promise<void>}
+     */
     async init() {
         try {
             console.log('🚀 [CARRIO POPUP] Initializing...');
 
-            // Setup event listeners
+            this.setLoading(true);
+
+            // Setup event listeners first
             this.setupEventListeners();
 
             // Check authentication status
             await this.checkAuthStatus();
 
-            // If authenticated, load settings and recent applications
+            // Load data if authenticated
             if (this.isAuthenticated) {
-                await this.loadSettings();
-                await this.loadRecentApplications();
+                await Promise.all([this.loadSettings(), this.loadRecentApplications()]);
             }
 
             // Update UI
             this.updateUI();
 
+            // Setup periodic refresh for recent applications
+            this.setupPeriodicRefresh();
+
             console.log('✅ [CARRIO POPUP] Initialized successfully');
         } catch (error) {
             console.error('❌ [CARRIO POPUP] Initialization error:', error);
             this.showError('Initialization failed: ' + error.message);
+        } finally {
+            this.setLoading(false);
         }
     }
 
+    /**
+     * Set loading state and update UI accordingly
+     * @param {boolean} loading - Whether popup is loading
+     */
+    setLoading(loading) {
+        this.isLoading = loading;
+        const loadingElement = document.getElementById('loading-indicator');
+        if (loadingElement) {
+            loadingElement.style.display = loading ? 'block' : 'none';
+        }
+    }
+
+    // ===== EVENT LISTENERS =====
+
+    /**
+     * Setup all event listeners for popup UI elements
+     */
     setupEventListeners() {
-        // Dashboard buttons
-        document.getElementById('open-dashboard')?.addEventListener('click', () => {
-            this.openDashboard();
+        // Dashboard navigation buttons
+        const dashboardButtons = ['open-dashboard', 'open-dashboard-unauth', 'open-carrio'];
+
+        dashboardButtons.forEach((id) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('click', () => this.openDashboard());
+            }
         });
 
-        document.getElementById('open-dashboard-unauth')?.addEventListener('click', () => {
-            this.openDashboard();
+        // Settings toggle buttons
+        const toggleButtons = [
+            { id: 'auto-tracking-toggle', handler: () => this.toggleAutoTracking() },
+            { id: 'notifications-toggle', handler: () => this.toggleNotifications() },
+        ];
+
+        toggleButtons.forEach(({ id, handler }) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('click', handler);
+            }
         });
 
-        document.getElementById('open-carrio')?.addEventListener('click', () => {
-            this.openDashboard();
+        // Action buttons
+        const actionButtons = [
+            { id: 'test-tracking', handler: () => this.testTracking() },
+            { id: 'help-link', handler: () => this.openHelp() },
+            { id: 'refresh-apps', handler: () => this.refreshApplications() },
+        ];
+
+        actionButtons.forEach(({ id, handler }) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('click', handler);
+            }
         });
 
-        // Settings toggles
-        document.getElementById('auto-tracking-toggle')?.addEventListener('click', () => {
-            this.toggleAutoTracking();
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                window.close();
+            }
         });
+    }
 
-        document.getElementById('notifications-toggle')?.addEventListener('click', () => {
-            this.toggleNotifications();
-        });
-
-        // Test tracking button
-        document.getElementById('test-tracking')?.addEventListener('click', () => {
-            this.testTracking();
-        });
-
-        // Help link
-        document.getElementById('help-link')?.addEventListener('click', () => {
-            this.openHelp();
-        });
+    /**
+     * Setup periodic refresh for recent applications
+     */
+    setupPeriodicRefresh() {
+        if (this.isAuthenticated) {
+            setInterval(() => {
+                if (!this.isLoading) {
+                    this.loadRecentApplications();
+                }
+            }, this.config.REFRESH_INTERVAL);
+        }
     }
 
     async checkAuthStatus() {

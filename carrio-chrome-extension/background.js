@@ -1,16 +1,119 @@
 // Carrio Chrome Extension Background Script
 
-// Configuration
+// ===== CONSTANTS =====
 const CONFIG = {
     API_BASE_URL: 'http://localhost:3000', // Change to production URL when deployed
     TIMEOUT: 10000, // 10 seconds timeout
     DEBUG: false,
+    MAX_RETRY_ATTEMPTS: 3,
+    CACHE_DURATION: 5 * 60 * 1000, // 5 minutes
 };
 
-// Utility functions
+const API_ENDPOINTS = {
+    CHECK_APPLICATION: '/api/applications/check',
+    CREATE_APPLICATION: '/api/applications/create',
+    GET_APPLICATIONS: '/api/applications',
+    VALIDATE_TOKEN: '/api/auth/validate',
+};
+
+const AUTH_COOKIE_PATTERNS = [
+    'sb-icelfwwfakovrgbqfwhl-auth-token',
+    'sb-localhost-auth-token',
+    'supabase-auth-token',
+    'supabase.auth.token',
+];
+
+const SUPPORTED_DOMAINS = ['http://localhost:3000', 'https://localhost:3000', 'https://carrio.app'];
+
+// ===== GLOBAL STATE =====
+let cachedAuthToken = null;
+let extensionSettings = {
+    autoTracking: true,
+    notifications: true,
+};
+
+// ===== UTILITY FUNCTIONS =====
 function debugLog(...args) {
-    // Logs disabled
+    // Logs disabled for performance
 }
+
+/**
+ * Creates a timeout promise for fetch requests
+ * @param {number} timeout - Timeout in milliseconds
+ * @returns {Promise} Promise that rejects after timeout
+ */
+function createTimeoutPromise(timeout) {
+    return new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout')), timeout);
+    });
+}
+
+/**
+ * Enhanced fetch with timeout and retry logic
+ * @param {string} url - URL to fetch
+ * @param {object} options - Fetch options
+ * @param {number} retries - Number of retry attempts
+ * @returns {Promise<Response>} Fetch response
+ */
+async function enhancedFetch(url, options = {}, retries = CONFIG.MAX_RETRY_ATTEMPTS) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), CONFIG.TIMEOUT);
+
+            const response = await fetch(url, {
+                ...options,
+                signal: controller.signal,
+            });
+
+            clearTimeout(timeoutId);
+            return response;
+        } catch (error) {
+            if (attempt === retries) {
+                throw error;
+            }
+            // Wait before retry (exponential backoff)
+            await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
+        }
+    }
+}
+
+/**
+ * Safely parses JSON with error handling
+ * @param {string} jsonString - JSON string to parse
+ * @returns {object|null} Parsed object or null if invalid
+ */
+function safeJsonParse(jsonString) {
+    try {
+        return JSON.parse(jsonString);
+    } catch (error) {
+        debugLog('JSON parse error:', error);
+        return null;
+    }
+}
+
+/**
+ * Extracts access token from cookie data
+ * @param {string} cookieValue - Raw cookie value
+ * @returns {string|null} Access token or null
+ */
+function extractAccessToken(cookieValue) {
+    try {
+        const decodedValue = decodeURIComponent(cookieValue);
+        const tokenData = safeJsonParse(decodedValue);
+
+        if (tokenData) {
+            return tokenData.access_token || tokenData.token || null;
+        }
+
+        return cookieValue;
+    } catch (error) {
+        debugLog('Token extraction error:', error);
+        return cookieValue;
+    }
+}
+
+// ===== AUTH FUNCTIONS (PRESERVED FLOW) =====
 
 // Get auth token from cookies
 async function getAuthToken() {
@@ -61,11 +164,9 @@ async function getAuthToken() {
         }
 
         // Check multiple domains for the auth token
-        const domains = ['http://localhost:3000', 'https://localhost:3000', 'https://carrio.app'];
+        debugLog('Starting cookie search across domains:', SUPPORTED_DOMAINS);
 
-        debugLog('Starting cookie search across domains:', domains);
-
-        for (const domain of domains) {
+        for (const domain of SUPPORTED_DOMAINS) {
             try {
                 debugLog(`Checking domain: ${domain}`);
 
@@ -84,14 +185,7 @@ async function getAuthToken() {
                 );
 
                 // Look for Supabase auth cookies (different patterns)
-                const authCookiePatterns = [
-                    'sb-icelfwwfakovrgbqfwhl-auth-token',
-                    'sb-localhost-auth-token',
-                    'supabase-auth-token',
-                    'supabase.auth.token',
-                ];
-
-                for (const pattern of authCookiePatterns) {
+                for (const pattern of AUTH_COOKIE_PATTERNS) {
                     const cookies = await chrome.cookies.getAll({
                         url: domain,
                         name: pattern,
@@ -102,15 +196,10 @@ async function getAuthToken() {
                         debugLog('Found auth token cookie:', tokenCookie.name, 'from domain:', domain);
                         debugLog('Cookie value preview:', tokenCookie.value.substring(0, 100) + '...');
 
-                        // Parse the token value (it might be URL encoded JSON)
-                        try {
-                            const decodedValue = decodeURIComponent(tokenCookie.value);
-                            const tokenData = JSON.parse(decodedValue);
-                            debugLog('Parsed token data structure:', Object.keys(tokenData));
-                            return tokenData.access_token || tokenData.token || tokenData;
-                        } catch (parseError) {
-                            debugLog('Failed to parse token data, using raw value:', parseError);
-                            return tokenCookie.value;
+                        const token = extractAccessToken(tokenCookie.value);
+                        if (token) {
+                            cachedAuthToken = token;
+                            return token;
                         }
                     }
                 }
@@ -142,10 +231,17 @@ async function getAuthToken() {
     }
 }
 
-// Check if application already exists
+// ===== API FUNCTIONS =====
+
+/**
+ * Check if application already exists
+ * @param {object} jobData - Job data to check
+ * @param {string} authToken - Authentication token
+ * @returns {Promise<boolean>} True if application exists
+ */
 async function checkApplicationExists(jobData, authToken) {
     try {
-        const response = await fetch(`${CONFIG.API_BASE_URL}/api/applications/check`, {
+        const response = await enhancedFetch(`${CONFIG.API_BASE_URL}${API_ENDPOINTS.CHECK_APPLICATION}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -159,7 +255,7 @@ async function checkApplicationExists(jobData, authToken) {
 
         if (response.ok) {
             const result = await response.json();
-            return result.exists;
+            return Boolean(result.exists);
         }
 
         return false;
@@ -169,7 +265,12 @@ async function checkApplicationExists(jobData, authToken) {
     }
 }
 
-// Create application via API
+/**
+ * Create application via API
+ * @param {object} jobData - Job data to create
+ * @param {string} authToken - Authentication token
+ * @returns {Promise<object>} Creation result
+ */
 async function createApplication(jobData, authToken) {
     try {
         debugLog('Creating application with data:', jobData);
@@ -183,7 +284,7 @@ async function createApplication(jobData, authToken) {
             company_website: jobData.jobUrl || null,
         };
 
-        const response = await fetch(`${CONFIG.API_BASE_URL}/api/applications/create`, {
+        const response = await enhancedFetch(`${CONFIG.API_BASE_URL}${API_ENDPOINTS.CREATE_APPLICATION}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -199,27 +300,27 @@ async function createApplication(jobData, authToken) {
             return { success: true, data: result };
         } else {
             debugLog('Failed to create application:', result);
-            return { success: false, error: result.message || 'Failed to create application' };
+            return {
+                success: false,
+                error: result.error || 'Failed to create application',
+            };
         }
     } catch (error) {
         debugLog('Error creating application:', error);
-        return { success: false, error: error.message };
+        return {
+            success: false,
+            error: error.message || 'Network error',
+        };
     }
 }
 
-// Store auth token when received from localhost
-let cachedAuthToken = null;
-
-// Settings storage
-let settings = {
-    autoTracking: true,
-    notifications: true,
-};
-
-// Verify if cached token is still valid
+/**
+ * Verify if cached token is still valid
+ * @returns {Promise<boolean>} True if token is valid
+ */
 async function verifyCachedToken() {
     try {
-        // Method 1: Check if the cookie still exists
+        // Method 1: Check if the cookie still exists in localStorage tabs
         const tabs = await chrome.tabs.query({});
         const localhostTabs = tabs.filter(
             (tab) => tab.url && (tab.url.includes('localhost:3000') || tab.url.includes('127.0.0.1:3000')),
@@ -232,7 +333,7 @@ async function verifyCachedToken() {
                         type: 'CHECK_AUTH_COOKIE',
                     });
 
-                    if (result && result.exists) {
+                    if (result?.exists) {
                         debugLog('Auth cookie still exists, cached token is valid');
                         return true;
                     }
@@ -245,7 +346,7 @@ async function verifyCachedToken() {
         // Method 2: Try to validate token with API
         if (cachedAuthToken) {
             try {
-                const response = await fetch(`${CONFIG.API_BASE_URL}/api/applications/check`, {
+                const response = await enhancedFetch(`${CONFIG.API_BASE_URL}${API_ENDPOINTS.CHECK_APPLICATION}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -350,15 +451,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 
     if (message.type === 'GET_SETTINGS') {
-        sendResponse(settings);
+        sendResponse(extensionSettings);
         return true;
     }
 
     if (message.type === 'UPDATE_SETTINGS') {
-        settings.autoTracking = message.autoTracking ?? settings.autoTracking;
-        settings.notifications = message.notifications ?? settings.notifications;
+        extensionSettings.autoTracking = message.autoTracking ?? extensionSettings.autoTracking;
+        extensionSettings.notifications = message.notifications ?? extensionSettings.notifications;
 
-        debugLog('Settings updated:', settings);
+        debugLog('Settings updated:', extensionSettings);
 
         // Notify all content scripts about settings change
         chrome.tabs.query({ url: ['*://*.linkedin.com/*'] }, (tabs) => {
@@ -366,8 +467,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 chrome.tabs
                     .sendMessage(tab.id, {
                         type: 'UPDATE_SETTINGS',
-                        autoTracking: settings.autoTracking,
-                        notifications: settings.notifications,
+                        autoTracking: extensionSettings.autoTracking,
+                        notifications: extensionSettings.notifications,
                     })
                     .catch(() => {
                         // Ignore errors for tabs without content script
@@ -392,13 +493,26 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
 });
 
-// Handle application tracking
+// ===== MESSAGE HANDLERS =====
+
+/**
+ * Handle application tracking request
+ * @param {object} jobData - Job data to track
+ * @returns {Promise<object>} Tracking result
+ */
 async function handleTrackApplication(jobData) {
     try {
-        // Validate job data
-        if (!jobData.company_name || !jobData.position) {
+        // Validate required job data
+        if (!jobData?.company_name || !jobData?.position) {
             throw new Error('Missing required fields: company_name and position');
         }
+
+        // Sanitize input data
+        const sanitizedJobData = {
+            company_name: String(jobData.company_name).trim(),
+            position: String(jobData.position).trim(),
+            jobUrl: jobData.jobUrl ? String(jobData.jobUrl).trim() : null,
+        };
 
         // Get auth token
         const authToken = await getAuthToken();
@@ -407,7 +521,7 @@ async function handleTrackApplication(jobData) {
         }
 
         // Check if application already exists
-        const exists = await checkApplicationExists(jobData, authToken);
+        const exists = await checkApplicationExists(sanitizedJobData, authToken);
         if (exists) {
             return {
                 success: false,
@@ -417,7 +531,7 @@ async function handleTrackApplication(jobData) {
         }
 
         // Create the application
-        const result = await createApplication(jobData, authToken);
+        const result = await createApplication(sanitizedJobData, authToken);
 
         if (result.success) {
             return {
@@ -437,12 +551,15 @@ async function handleTrackApplication(jobData) {
     }
 }
 
-// Handle auth status check
+/**
+ * Handle authentication status check
+ * @returns {Promise<object>} Authentication status
+ */
 async function handleGetAuthStatus() {
     try {
         const authToken = await getAuthToken();
         return {
-            authenticated: !!authToken,
+            authenticated: Boolean(authToken),
             token: authToken ? 'present' : 'missing',
         };
     } catch (error) {
@@ -454,7 +571,11 @@ async function handleGetAuthStatus() {
     }
 }
 
-// Get recent applications
+/**
+ * Get recent applications from API
+ * @param {number} limit - Maximum number of applications to fetch
+ * @returns {Promise<Array>} Array of recent applications
+ */
 async function getRecentApplications(limit = 5) {
     try {
         const token = await getAuthToken();
@@ -462,39 +583,52 @@ async function getRecentApplications(limit = 5) {
             throw new Error('Authentication required');
         }
 
-        const response = await fetch(`${CONFIG.API_BASE_URL}/api/applications?limit=${limit}&sort=created_at:desc`, {
-            method: 'GET',
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
+        const sanitizedLimit = Math.max(1, Math.min(50, Number(limit) || 5));
+        const response = await enhancedFetch(
+            `${CONFIG.API_BASE_URL}${API_ENDPOINTS.GET_APPLICATIONS}?limit=${sanitizedLimit}&sort=created_at:desc`,
+            {
+                method: 'GET',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
             },
-        });
+        );
 
         if (!response.ok) {
-            throw new Error('Failed to fetch applications');
+            throw new Error(`Failed to fetch applications: ${response.status}`);
         }
 
         const result = await response.json();
-        return result.applications || result || [];
+        return Array.isArray(result.applications) ? result.applications : Array.isArray(result) ? result : [];
     } catch (error) {
         debugLog('Error fetching recent applications:', error);
         throw error;
     }
 }
 
-// Listen for extension installation
+// ===== EVENT LISTENERS =====
+
+/**
+ * Handle extension installation and updates
+ */
 chrome.runtime.onInstalled.addListener((details) => {
     debugLog('Extension installed/updated:', details.reason);
 
     if (details.reason === 'install') {
-        // Open welcome page or show notification
-        chrome.tabs.create({
-            url: `${CONFIG.API_BASE_URL}/welcome?extension=installed`,
-        });
+        chrome.tabs
+            .create({
+                url: `${CONFIG.API_BASE_URL}/?extension=installed`,
+            })
+            .catch((error) => {
+                debugLog('Failed to open welcome page:', error);
+            });
     }
 });
 
-// Listen for tab updates to inject content script if needed
+/**
+ * Monitor tab updates for LinkedIn job pages
+ */
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if (
         changeInfo.status === 'complete' &&
@@ -502,7 +636,18 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
         (tab.url.includes('linkedin.com/jobs') || tab.url.includes('www.linkedin.com/jobs'))
     ) {
         debugLog('LinkedIn jobs page loaded:', tab.url);
+        // Optional: Send settings to newly loaded LinkedIn pages
+        chrome.tabs
+            .sendMessage(tabId, {
+                type: 'UPDATE_SETTINGS',
+                autoTracking: extensionSettings.autoTracking,
+                notifications: extensionSettings.notifications,
+            })
+            .catch(() => {
+                // Content script might not be ready yet, ignore error
+            });
     }
 });
 
+// ===== INITIALIZATION =====
 debugLog('Background script initialized successfully');

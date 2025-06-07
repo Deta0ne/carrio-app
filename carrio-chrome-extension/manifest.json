@@ -2,7 +2,8 @@
   "manifest_version": 3,
   "name": "Carrio Job Tracker",
   "version": "1.0.0",
-  "description": "Track your LinkedIn job applications automatically with Carrio",
+  "description": "Automatically track your LinkedIn job applications with Carrio - Never miss an opportunity!",
+  "author": "Carrio Team",
   "permissions": [
     "storage",
     "cookies",
@@ -15,10 +16,12 @@
     "https://localhost:3000/*",
     "http://127.0.0.1:3000/*",
     "https://127.0.0.1:3000/*",
-    "https://*.vercel.app/*"
+    "https://*.vercel.app/*",
+    "https://carrio.app/*"
   ],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
   "content_scripts": [
     {
@@ -27,20 +30,29 @@
         "https://linkedin.com/jobs/*"
       ],
       "js": ["content.js"],
-      "run_at": "document_end"
+      "run_at": "document_end",
+      "all_frames": false
     },
     {
       "matches": [
         "http://localhost:3000/*",
         "https://localhost:3000/*",
-        "http://127.0.0.1:3000/*"
+        "http://127.0.0.1:3000/*",
+        "https://carrio.app/*"
       ],
       "js": ["auth-helper.js"],
-      "run_at": "document_end"
+      "run_at": "document_end",
+      "all_frames": false
     }
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Carrio Job Tracker"
-  }
+    "default_title": "Carrio Job Tracker - Track Applications"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["popup.html"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 } 

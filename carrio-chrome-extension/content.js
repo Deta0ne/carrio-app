@@ -37,6 +37,8 @@ console.log('🚀 [CARRIO] Current URL:', window.location.href);
                 '.t-24.t-bold.inline',
                 '.jobs-unified-top-card__job-title-link',
                 '.job-details-jobs-unified-top-card__job-title-link',
+                '.job-details-jobs-unified-top-card__job-title',
+                '.jobs-unified-top-card__job-title',
             ],
             companyName: [
                 '.job-details-jobs-unified-top-card__company-name a',
@@ -46,6 +48,8 @@ console.log('🚀 [CARRIO] Current URL:', window.location.href);
                 'a[data-control-name="job_details_topcard_company_url"]',
                 '.jobs-unified-top-card__company-name span',
                 '.job-details-jobs-unified-top-card__company-name span',
+                '.job-details-jobs-unified-top-card__company-name',
+                '.jobs-unified-top-card__company-name',
             ],
             location: [
                 '.job-details-jobs-unified-top-card__bullet',
@@ -54,6 +58,7 @@ console.log('🚀 [CARRIO] Current URL:', window.location.href);
                 '.job-poster__location',
                 '.jobs-unified-top-card__bullet:last-child',
                 '.job-details-jobs-unified-top-card__primary-description .tvm__text',
+                '.job-details-jobs-unified-top-card__primary-description',
             ],
             description: [
                 '.jobs-description-content__text',
@@ -61,28 +66,58 @@ console.log('🚀 [CARRIO] Current URL:', window.location.href);
                 '.jobs-box__html-content',
                 '.jobs-description__text',
                 '.jobs-description .jobs-description-content__text',
+                '.jobs-description-content',
+                '[data-test-job-description]',
             ],
             salary: [
                 '.job-details-jobs-unified-top-card__job-insight',
                 '.jobs-unified-top-card__job-insight',
                 '.salary-main-rail__salary-info',
             ],
-            // Application buttons
+            // Application buttons - Enhanced for Turkish LinkedIn
             applyButton: [
+                // English
                 'button[aria-label*="Apply"]',
-                'button[aria-label*="başvur"]', // Turkish
-                'button[aria-label*="başvurun"]', // Turkish variant
+                'button[aria-label*="apply"]',
+                // Turkish variations
+                'button[aria-label*="başvur"]',
+                'button[aria-label*="Başvur"]',
+                'button[aria-label*="uygula"]',
+                'button[aria-label*="Uygula"]',
+                'button[aria-label*="BAŞVUR"]',
+                'button[aria-label*="UYGULA"]',
+                // CSS selectors
                 'button.jobs-apply-button',
                 'button[data-control-name="jobdetails_topcard_inapply"]',
                 '.jobs-apply-button--top-card button',
+                '.jobs-apply-button:not([aria-label*="Easy"]):not([aria-label*="Kolay"]):not([aria-label*="Hızlı"])',
+                // New LinkedIn selectors
+                'button[data-test-id="apply-button"]',
+                'button.jobs-apply-button--primary:not([aria-label*="Easy"]):not([aria-label*="Kolay"])',
             ],
             easyApplyButton: [
+                // English
                 'button[aria-label*="Easy Apply"]',
-                'button[aria-label*="Hızlı Başvuru"]', // Turkish
-                'button[aria-label*="Kolay Başvuru"]', // Turkish alternative
-                'button[aria-label*="kolayca başvur"]', // Turkish - actual LinkedIn aria-label
+                'button[aria-label*="easy apply"]',
+                // Turkish variations - all possible combinations
+                'button[aria-label*="Hızlı Başvuru"]',
+                'button[aria-label*="hızlı başvuru"]',
+                'button[aria-label*="Kolay Başvuru"]',
+                'button[aria-label*="kolay başvuru"]',
+                'button[aria-label*="kolayca başvur"]',
+                'button[aria-label*="Kolayca başvur"]',
+                'button[aria-label*="kolayca başvurun"]',
+                'button[aria-label*="Kolayca başvurun"]',
+                'button[aria-label*="KOLAY BAŞVURU"]',
+                'button[aria-label*="HIZLI BAŞVURU"]',
+                // CSS selectors
                 'button.jobs-apply-button--primary',
                 'button[data-control-name="jobdetails_topcard_inapply_easy"]',
+                '.jobs-apply-button[aria-label*="Easy"]',
+                '.jobs-apply-button[aria-label*="Kolay"]',
+                '.jobs-apply-button[aria-label*="Hızlı"]',
+                // New LinkedIn selectors
+                'button[data-test-id="easy-apply-button"]',
             ],
         },
     };
@@ -377,8 +412,35 @@ console.log('🚀 [CARRIO] Current URL:', window.location.href);
             const text = button.textContent?.toLowerCase() || '';
             const ariaLabel = button.getAttribute('aria-label')?.toLowerCase() || '';
 
+            // Enhanced logging for debugging
+            if (
+                text.includes('başvur') ||
+                text.includes('uygula') ||
+                text.includes('apply') ||
+                ariaLabel.includes('başvur') ||
+                ariaLabel.includes('uygula') ||
+                ariaLabel.includes('apply')
+            ) {
+                console.log('🔍 [CARRIO BUTTON DEBUG]', {
+                    text: button.textContent,
+                    ariaLabel: button.getAttribute('aria-label'),
+                    className: button.className,
+                    id: button.id,
+                    dataset: button.dataset,
+                });
+            }
+
             // Turkish and English keywords for apply buttons
-            const applyKeywords = ['apply', 'başvur', 'başvurun', 'uygula', 'uygulan'];
+            const applyKeywords = [
+                'apply',
+                'başvur',
+                'başvurun',
+                'uygula',
+                'uygulan',
+                'iş başvurusu',
+                'başvur yap',
+                'apply now',
+            ];
 
             const easyApplyKeywords = [
                 'easy apply',
@@ -386,11 +448,15 @@ console.log('🚀 [CARRIO] Current URL:', window.location.href);
                 'kolay başvuru',
                 'kolayca başvur',
                 'kolayca başvurun',
+                'hızlı',
+                'kolay',
+                'kolayca',
             ];
 
             // Check for easy apply first (more specific)
             for (const keyword of easyApplyKeywords) {
                 if (text.includes(keyword) || ariaLabel.includes(keyword)) {
+                    console.log('✅ [CARRIO] Easy Apply button detected:', button.textContent?.trim());
                     return 'easy';
                 }
             }
@@ -398,7 +464,15 @@ console.log('🚀 [CARRIO] Current URL:', window.location.href);
             // Check for regular apply
             for (const keyword of applyKeywords) {
                 if (text.includes(keyword) || ariaLabel.includes(keyword)) {
-                    return 'standard';
+                    // Make sure it's not an easy apply button
+                    const isNotEasy = !easyApplyKeywords.some(
+                        (easy) => text.includes(easy) || ariaLabel.includes(easy),
+                    );
+
+                    if (isNotEasy) {
+                        console.log('✅ [CARRIO] Standard Apply button detected:', button.textContent?.trim());
+                        return 'standard';
+                    }
                 }
             }
 
@@ -546,13 +620,28 @@ console.log('🚀 [CARRIO] Current URL:', window.location.href);
                     text.includes('başvur') ||
                     text.includes('uygula') ||
                     text.includes('kolay') ||
+                    text.includes('hızlı') ||
                     ariaLabel.includes('apply') ||
                     ariaLabel.includes('başvur') ||
+                    ariaLabel.includes('uygula') ||
+                    ariaLabel.includes('kolay') ||
+                    ariaLabel.includes('hızlı') ||
                     ariaLabel.includes('kolayca')
                 );
             });
 
             console.log(`🎯 [CARRIO] Apply buttons found: ${applyButtons.length}`);
+
+            console.log('📋 [CARRIO] Button details:');
+            applyButtons.forEach((btn, index) => {
+                console.log(`  ${index + 1}.`, {
+                    text: btn.textContent?.trim(),
+                    ariaLabel: btn.getAttribute('aria-label'),
+                    className: btn.className,
+                    hasCarrioListener: !!btn.dataset.carrioListener,
+                    id: btn.id,
+                });
+            });
 
             debugLog(
                 `Found ${applyButtons.length} potential apply buttons on page:`,
@@ -560,9 +649,50 @@ console.log('🚀 [CARRIO] Current URL:', window.location.href);
                     text: btn.textContent?.trim(),
                     ariaLabel: btn.getAttribute('aria-label'),
                     className: btn.className,
+                    hasListener: !!btn.dataset.carrioListener,
                 })),
             );
+
+            // Create test button for manual testing
+            if (applyButtons.length === 0) {
+                console.log('⚠️ [CARRIO] No apply buttons found! Creating manual test button...');
+                createManualTestButton();
+            }
         }, 2000);
+
+        // Create manual test function
+        function createManualTestButton() {
+            const testButton = document.createElement('button');
+            testButton.innerHTML = '🧪 Test Carrio Tracking';
+            testButton.style.cssText = `
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                z-index: 10000;
+                background: #0073b1;
+                color: white;
+                border: none;
+                padding: 10px 15px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-weight: bold;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            `;
+
+            testButton.addEventListener('click', () => {
+                console.log('🧪 [CARRIO] Manual test triggered');
+                trackApplication('manual');
+            });
+
+            document.body.appendChild(testButton);
+            console.log('✅ [CARRIO] Manual test button created');
+
+            // Remove after 30 seconds
+            setTimeout(() => {
+                testButton.remove();
+                console.log('🗑️ [CARRIO] Manual test button removed');
+            }, 30000);
+        }
 
         console.log('✅ [CARRIO] LinkedIn tracker initialized successfully');
         debugLog('LinkedIn tracker initialized successfully');

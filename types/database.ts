@@ -8,6 +8,11 @@ export interface JobApplication {
     interview_date: string | null
     source: string
     company_website?: string
+    job_description?: string | null
+    location?: string | null
+    salary?: string | null
+    job_id?: string | null
+    application_type?: 'standard' | 'easy' | null
     created_at: string
     updated_at: string
 } 
@@ -22,6 +27,11 @@ export interface JobApplications {
     interview_date: string | null
     source: string
     company_website?: string
+    job_description?: string | null
+    location?: string | null
+    salary?: string | null
+    job_id?: string | null
+    application_type?: 'standard' | 'easy' | null
     created_at: string
     last_update: string
 } 

@@ -10,6 +10,11 @@ const createApplicationSchema = z.object({
   application_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   source: z.enum(['LinkedIn', 'Company Website', 'Indeed', 'GitHub Jobs', 'Career Website', 'Other']).default('LinkedIn'),
   company_website: z.string().url().optional().nullable(),
+  job_description: z.string().optional().nullable(),
+  location: z.string().optional().nullable(),
+  salary: z.string().optional().nullable(),
+  job_id: z.string().optional().nullable(),
+  application_type: z.enum(['standard', 'easy']).optional().nullable(),
 });
 
 export async function POST(request: NextRequest) {
@@ -74,6 +79,11 @@ export async function POST(request: NextRequest) {
         application_date: validatedData.application_date,
         source: validatedData.source,
         company_website: validatedData.company_website,
+        job_description: validatedData.job_description,
+        location: validatedData.location,
+        salary: validatedData.salary,
+        job_id: validatedData.job_id,
+        application_type: validatedData.application_type,
         created_at: new Date().toISOString(),
         last_update: new Date().toISOString(),
       })

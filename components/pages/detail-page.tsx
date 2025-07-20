@@ -1,7 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import { CalendarIcon, Paperclip, Plus, Trash2, Globe, Clock, RefreshCw, ExternalLink, Loader2 } from 'lucide-react';
+import {
+    CalendarIcon,
+    Paperclip,
+    Plus,
+    Trash2,
+    Globe,
+    Clock,
+    RefreshCw,
+    ExternalLink,
+    Loader2,
+    FileText,
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 
@@ -37,6 +48,7 @@ interface Application {
         name: string;
         type: 'CV' | 'CL';
     }>;
+    job_description: string;
 }
 
 type DatabaseStatus = 'pending' | 'interview_stage' | 'offer_received' | 'planned' | 'rejected';
@@ -70,7 +82,7 @@ export function DetailPageComponent({ application }: { application: Application 
     const [currentStatus, setCurrentStatus] = useState<UIStatus>(initialStatus);
     const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
     const router = useRouter();
-
+    console.log(application);
     const handleSetReminder = () => {
         console.log('Set reminder');
     };
@@ -248,6 +260,21 @@ export function DetailPageComponent({ application }: { application: Application 
                                 </div>
                             </div>
                         </div>
+                    </Card>
+                </div>
+            </div>
+
+            {/* Middle Section - Job Description */}
+            <div className="p-4 sm:p-6 md:p-8 border-b border-gray-100 dark:border-gray-800">
+                <div className="grid grid-cols-1 gap-4 md:gap-8">
+                    <Card className="p-4 sm:p-6 bg-gray-50 dark:bg-gray-800/50 border-none">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-50 flex items-center">
+                                <FileText className="mr-2 h-5 w-5 text-purple-500" />
+                                Job Description
+                            </h3>
+                        </div>
+                        <div className="text-sm text-gray-600 dark:text-gray-300">{application.job_description}</div>
                     </Card>
                 </div>
             </div>

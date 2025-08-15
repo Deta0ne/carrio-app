@@ -7,6 +7,7 @@ import { DataTableColumnHeader, DataTableRowActions } from '@/components/applica
 import { format } from 'date-fns';
 import { JobApplication } from '@/types/database';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import Link from 'next/link';
 
 const truncateText = (text: string, limit: number) => {
     if (text.length <= limit) return text;
@@ -40,11 +41,17 @@ export const columns: ColumnDef<JobApplication>[] = [
         header: ({ column }) => <DataTableColumnHeader column={column} title="Company" />,
         cell: ({ row }) => {
             const value = row.getValue('company_name') as string;
+            const application = row.original;
             return (
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <span className="font-medium truncate block max-w-[200px]">{truncateText(value, 30)}</span>
+                            <Link
+                                href={`/home/${application.id}`}
+                                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium truncate block max-w-[200px] cursor-pointer hover:underline"
+                            >
+                                {truncateText(value, 30)}
+                            </Link>
                         </TooltipTrigger>
                         {value.length > 30 && (
                             <TooltipContent>

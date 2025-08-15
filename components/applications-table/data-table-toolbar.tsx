@@ -62,6 +62,7 @@ export function DataTableToolbar<TData extends { id: string }>({ table }: DataTa
                             column={table.getColumn('status')}
                             title="Status"
                             options={[
+                                { value: 'draft', label: 'Draft' },
                                 { value: 'pending', label: 'Pending' },
                                 { value: 'interview_stage', label: 'Interview' },
                                 { value: 'offer_received', label: 'Offer' },

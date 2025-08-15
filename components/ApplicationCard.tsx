@@ -82,6 +82,11 @@ const JobCard = ({ job }: JobCardProps) => {
             <CardContent className="p-6 pt-2 pb-3 flex-grow">
                 {/* Status badge */}
                 <div className="mb-4 flex flex-wrap gap-2">
+                    {job.status === 'draft' && (
+                        <Badge variant="outline" className="text-orange-600 border-orange-300">
+                            Draft
+                        </Badge>
+                    )}
                     {job.status === 'planned' && <Badge variant="secondary">Planned</Badge>}
                     {job.status === 'pending' && <Badge variant="outline">Pending</Badge>}
                     {job.status === 'interview_stage' && <Badge variant="default">Interview</Badge>}

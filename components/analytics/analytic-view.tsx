@@ -29,8 +29,10 @@ export default function AnalyticView({ applications }: { applications: JobApplic
     const [timeRange, setTimeRange] = useState('allTime');
 
     const filteredApplications = useMemo(() => {
+        const nonDraftApplications = applications.filter((app) => app.status !== 'draft');
+
         if (timeRange === 'allTime') {
-            return applications.filter((app) => {
+            return nonDraftApplications.filter((app) => {
                 try {
                     return !isNaN(new Date(app.application_date).getTime());
                 } catch (e) {
@@ -60,7 +62,7 @@ export default function AnalyticView({ applications }: { applications: JobApplic
             return [];
         }
         const startTime = startDate.getTime();
-        return applications.filter((app) => {
+        return nonDraftApplications.filter((app) => {
             try {
                 const appDate = new Date(app.application_date);
                 return !isNaN(appDate.getTime()) && appDate.getTime() >= startTime;
@@ -88,7 +90,9 @@ export default function AnalyticView({ applications }: { applications: JobApplic
         const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
         const endOfLastMonthTime = endOfLastMonth.getTime();
 
-        const appsUpToLastMonth = applications.filter((app) => {
+        const nonDraftApplications = applications.filter((app) => app.status !== 'draft');
+
+        const appsUpToLastMonth = nonDraftApplications.filter((app) => {
             try {
                 const appDate = new Date(app.application_date);
                 return !isNaN(appDate.getTime()) && appDate.getTime() <= endOfLastMonthTime;
@@ -97,13 +101,13 @@ export default function AnalyticView({ applications }: { applications: JobApplic
             }
         });
 
-        const currentOverallInterviewRate = calculateInterviewRate(applications);
-        const currentOverallOfferRate = calculateOfferRate(applications);
+        const currentOverallInterviewRate = calculateInterviewRate(nonDraftApplications);
+        const currentOverallOfferRate = calculateOfferRate(nonDraftApplications);
         const overallRateLastMonth = calculateInterviewRate(appsUpToLastMonth);
         const overallOfferRateLastMonth = calculateOfferRate(appsUpToLastMonth);
 
         return {
-            applicationsChange: calculateApplicationsMonthlyChange(applications),
+            applicationsChange: calculateApplicationsMonthlyChange(nonDraftApplications),
             interviewRateChange: getMonthlyChange(currentOverallInterviewRate, overallRateLastMonth),
             offerRateChange: getMonthlyChange(currentOverallOfferRate, overallOfferRateLastMonth),
         };
@@ -134,10 +138,26 @@ export default function AnalyticView({ applications }: { applications: JobApplic
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuItem onSelect={() => handleExport('csv', applications, changeMetrics)}>
+                            <DropdownMenuItem
+                                onSelect={() =>
+                                    handleExport(
+                                        'csv',
+                                        applications.filter((app) => app.status !== 'draft'),
+                                        changeMetrics,
+                                    )
+                                }
+                            >
                                 Export Summary & Rates as CSV
                             </DropdownMenuItem>
-                            <DropdownMenuItem onSelect={() => handleExport('excel', applications, changeMetrics)}>
+                            <DropdownMenuItem
+                                onSelect={() =>
+                                    handleExport(
+                                        'excel',
+                                        applications.filter((app) => app.status !== 'draft'),
+                                        changeMetrics,
+                                    )
+                                }
+                            >
                                 Export All Stats as Excel
                             </DropdownMenuItem>
                         </DropdownMenuContent>

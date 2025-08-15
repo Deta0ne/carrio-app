@@ -8,7 +8,7 @@ export const applicationFormSchema = z.object({
     position: z.string()
         .min(3, "Position is too short")
         .max(150, "Position title cannot exceed 150 characters"),
-    status: z.enum(["pending", "interview_stage", "offer_received", "rejected", "planned"]),
+    status: z.enum(["draft", "pending", "interview_stage", "offer_received", "rejected", "planned"]),
     application_date: z.date({
         required_error: "Application date is required",
     }),

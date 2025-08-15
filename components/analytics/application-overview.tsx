@@ -67,6 +67,7 @@ export function ApplicationOverview({ applications = [] }: { applications?: JobA
             interview_stage: 0,
             offer_received: 0,
             rejected: 0,
+            draft: 0,
         };
 
         applications.forEach((app) => {

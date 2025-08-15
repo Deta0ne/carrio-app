@@ -99,6 +99,11 @@ export const columns: ColumnDef<JobApplication>[] = [
             const status = row.getValue('status') as string;
             return (
                 <div className="flex w-[100px] items-center">
+                    {status === 'draft' && (
+                        <Badge variant="outline" className="text-orange-600 border-orange-300">
+                            Draft
+                        </Badge>
+                    )}
                     {status === 'planned' && <Badge variant="secondary">Planned</Badge>}
                     {status === 'pending' && <Badge variant="outline">Pending</Badge>}
                     {status === 'interview_stage' && <Badge variant="default">Interview</Badge>}

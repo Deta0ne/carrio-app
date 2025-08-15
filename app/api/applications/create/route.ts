@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 const createApplicationSchema = z.object({
   company_name: z.string().min(1).max(100),
   position: z.string().min(1).max(150),
-  status: z.enum(['pending', 'interview_stage', 'offer_received', 'rejected', 'planned']).default('pending'),
+  status: z.enum(['draft', 'pending', 'interview_stage', 'offer_received', 'rejected', 'planned']).default('pending'),
   application_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   source: z.enum(['LinkedIn', 'Company Website', 'Indeed', 'GitHub Jobs', 'Career Website', 'Other']).default('LinkedIn'),
   company_website: z.string().url().optional().nullable(),

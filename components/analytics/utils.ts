@@ -132,7 +132,7 @@ export const handleExport = (format: 'csv' | 'excel', applications: JobApplicati
 
     const sources = ['LinkedIn', 'Company Website', 'Indeed', 'GitHub Jobs', 'Career Website', 'Other'];
 
-    const statusCounts = { planned: 0, pending: 0, interview_stage: 0, offer_received: 0, rejected: 0 };
+    const statusCounts = { draft: 0, planned: 0, pending: 0, interview_stage: 0, offer_received: 0, rejected: 0 };
     applications.forEach((app) => {
         if (statusCounts[app.status] !== undefined) {
             statusCounts[app.status]++;

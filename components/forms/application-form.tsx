@@ -205,6 +205,7 @@ function ApplicationForm({ initialData, className, onSuccess }: ApplicationFormP
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
+                                            <SelectItem value="draft">Draft</SelectItem>
                                             <SelectItem value="pending">Pending</SelectItem>
                                             <SelectItem value="interview_stage">Interview</SelectItem>
                                             <SelectItem value="offer_received">Offer</SelectItem>
